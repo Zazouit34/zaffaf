@@ -8,10 +8,10 @@ import { Container } from "@/components/container";
 import { Button } from "@/components/ui/button";
 
 const navigation = [
-  { name: "Home", href: "/" },
-  { name: "Venues", href: "#venues" },
+  { name: "Accueil", href: "/" },
+  { name: "Lieux", href: "#venues" },
   { name: "Services", href: "#services" },
-  { name: "Reviews", href: "#reviews" },
+  { name: "Avis", href: "#reviews" },
   { name: "Contact", href: "#contact" },
 ];
 
@@ -33,7 +33,7 @@ export function Navbar() {
               className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
               onClick={() => setMobileMenuOpen(true)}
             >
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">Ouvrir le menu</span>
               <Menu className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
@@ -50,7 +50,7 @@ export function Navbar() {
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
             <Button>
-              Get Started
+              Commencer
             </Button>
           </div>
         </nav>
@@ -73,7 +73,7 @@ export function Navbar() {
               className="-m-2.5 rounded-md p-2.5 text-gray-700"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <span className="sr-only">Close menu</span>
+              <span className="sr-only">Fermer le menu</span>
               <X className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
@@ -93,7 +93,7 @@ export function Navbar() {
               </div>
               <div className="py-6">
                 <Button className="w-full">
-                  Get Started
+                  Commencer
                 </Button>
               </div>
             </div>

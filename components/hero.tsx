@@ -15,7 +15,7 @@ export function Hero() {
             <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30 z-10 rounded-2xl" />
             <Image
               src="/images/zaffaf-landing.png"
-              alt="Wedding Venue"
+              alt="Lieu de Mariage"
               width={1920}
               height={1080}
               className="object-cover h-full w-full rounded-2xl"
@@ -27,17 +27,17 @@ export function Hero() {
             <Container>
               <div className="text-center max-w-4xl mx-auto px-4">
                 <h1 className="font-nunito text-white font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-6 animate-fade-up" style={{ animationDelay: "200ms" }}>
-                  Find Your Perfect <span className="text-primary">Wedding Venue</span>
+                  Trouvez Votre <span className="text-primary">Lieu de Mariage Parfait</span>
                 </h1>
                 <p className="text-white/90 text-lg md:text-xl mb-8 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: "400ms" }}>
-                  Discover beautiful wedding and event venues with honest reviews and easily connect with all the services you need for your special day.
+                  Découvrez de magnifiques lieux de mariage et d'événements avec des avis honnêtes et connectez-vous facilement avec tous les services dont vous avez besoin pour votre jour spécial.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-up" style={{ animationDelay: "600ms" }}>
                   <Button size="lg" className="text-lg px-8">
-                    Explore Venues
+                    Explorer les Lieux
                   </Button>
                   <Button size="lg" className="text-lg px-8" variant="outline">
-                    Find Services
+                    Trouver des Services
                   </Button>
                 </div>
               </div>
@@ -53,7 +53,7 @@ export function Hero() {
               <div className="absolute inset-0 z-10 rounded-2xl" />
               <Image
                 src="/images/zaffaf-landing.png"
-                alt="Wedding Venue"
+                alt="Lieu de Mariage"
                 width={800}
                 height={600}
                 className="object-cover h-full w-full rounded-2xl"
@@ -64,17 +64,17 @@ export function Hero() {
           {/* Content below image for mobile */}
           <div className="text-center px-4">
             <h1 className="font-nunito font-bold text-3xl mb-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
-              Find Your Perfect <span className="text-primary">Wedding Venue</span>
+              Trouvez Votre <span className="text-primary">Lieu de Mariage Parfait</span>
             </h1>
             <p className="text-gray-700 mb-6 max-w-md mx-auto animate-fade-up" style={{ animationDelay: "400ms" }}>
-              Discover beautiful wedding venues with honest reviews and connect with all services you need.
+              Découvrez de magnifiques lieux de mariage avec des avis honnêtes et connectez-vous avec tous les services dont vous avez besoin.
             </p>
             <div className="flex flex-col gap-3 animate-fade-up" style={{ animationDelay: "600ms" }}>
               <Button size="lg">
-                Explore Venues
+                Explorer les Lieux
               </Button>
               <Button size="lg" variant="outline">
-                Find Services
+                Trouver des Services
               </Button>
             </div>
           </div>

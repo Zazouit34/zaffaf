@@ -8,27 +8,27 @@ import { MaskedImageVariant } from "@/components/ui/masked-image";
 
 const features = [
   {
-    title: "Find the Perfect Venue",
+    title: "Trouvez le Lieu Parfait",
     description:
-      "Explore a curated selection of stunning wedding and event venues from around the world. Filter by location, capacity, style, and price to find the perfect match for your special day.",
-    image: "/images/hero-image-zaffaf.png",
-    alt: "Venue search interface",
+      "Explorez une sélection soignée de lieux de mariage et d'événements à travers le monde. Filtrez par lieu, capacité, style et prix pour trouver l'endroit idéal pour votre journée spéciale.",
+    image: "/images/image-venue-landing.png",
+    alt: "Interface de recherche de lieux",
     variant: "shape1" as MaskedImageVariant,
   },
   {
-    title: "Read Authentic Reviews",
+    title: "Lisez des Avis Authentiques",
     description:
-      "Make informed decisions with honest reviews from real couples. See photos, ratings, and detailed feedback to ensure the venue meets your expectations before booking.",
+      "Prenez des décisions éclairées grâce à des avis honnêtes de vrais couples. Consultez les photos, les évaluations et les commentaires détaillés pour vous assurer que le lieu répond à vos attentes avant de réserver.",
     image: "/images/hero-image-zaffaf.png",
-    alt: "Couple reading venue reviews",
+    alt: "Couple lisant des avis sur les lieux",
     variant: "shape6" as MaskedImageVariant,
   },
   {
-    title: "Book Essential Services",
+    title: "Réservez des Services Essentiels",
     description:
-      "From caterers and photographers to florists and entertainers, easily browse and book all the services you need to make your wedding day perfect, all in one place.",
+      "Des traiteurs aux photographes, en passant par les fleuristes et les animateurs, parcourez et réservez facilement tous les services nécessaires pour rendre votre journée de mariage parfaite, le tout au même endroit.",
     image: "/images/hero-image-zaffaf.png",
-    alt: "Wedding service providers",
+    alt: "Prestataires de services de mariage",
     variant: "shape3" as MaskedImageVariant,
   },
 ];
@@ -39,10 +39,10 @@ export function Features() {
       <Container>
         <div className="text-center mb-16 md:mb-24">
           <h2 className="text-3xl md:text-5xl font-bold font-nunito mb-6">
-            How Zaffaf Works
+            Comment Fonctionne Zaffaf
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            We make planning your wedding simple and stress-free with our comprehensive platform.
+            Nous rendons la planification de votre mariage simple et sans stress grâce à notre plateforme complète.
           </p>
         </div>
 
