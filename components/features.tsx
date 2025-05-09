@@ -19,15 +19,15 @@ const features = [
     title: "Read Authentic Reviews",
     description:
       "Make informed decisions with honest reviews from real couples. See photos, ratings, and detailed feedback to ensure the venue meets your expectations before booking.",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+    image: "/images/zaffaf-landing.png",
     alt: "Couple reading venue reviews",
-    variant: "shape5" as MaskedImageVariant,
+    variant: "shape1" as MaskedImageVariant,
   },
   {
     title: "Book Essential Services",
     description:
       "From caterers and photographers to florists and entertainers, easily browse and book all the services you need to make your wedding day perfect, all in one place.",
-    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+    image: "/images/zaffaf-landing.png",
     alt: "Wedding service providers",
     variant: "shape6" as MaskedImageVariant,
   },

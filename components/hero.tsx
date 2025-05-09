@@ -1,7 +1,7 @@
 "use client";
 
 import { Container } from "@/components/container";
-import { MaskedImage } from "@/components/ui/masked-image";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export function Hero() {
@@ -11,12 +11,11 @@ export function Hero() {
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 z-10" />
         <div className="relative h-full w-full">
-          <MaskedImage
+          <Image
             src="/images/hero-image-zaffaf.png"
             alt="Wedding Venue"
             width={1920}
             height={1080}
-            variant="shape1"
             className="object-cover h-full w-full"
           />
         </div>
