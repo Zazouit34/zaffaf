@@ -50,7 +50,7 @@ export function Hero() {
           <div className="relative overflow-hidden rounded-2xl shadow-xl mb-8">
             {/* Background with overlay - shorter for mobile */}
             <div className="relative aspect-[4/3]">
-              <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30 z-10 rounded-2xl" />
+              <div className="absolute inset-0 z-10 rounded-2xl" />
               <Image
                 src="/images/zaffaf-landing.png"
                 alt="Wedding Venue"
