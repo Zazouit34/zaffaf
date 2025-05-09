@@ -13,7 +13,7 @@ const features = [
       "Explore a curated selection of stunning wedding and event venues from around the world. Filter by location, capacity, style, and price to find the perfect match for your special day.",
     image: "/images/hero-image-zaffaf.png",
     alt: "Venue search interface",
-    variant: "shape3" as MaskedImageVariant,
+    variant: "shape1" as MaskedImageVariant,
   },
   {
     title: "Read Authentic Reviews",
@@ -21,7 +21,7 @@ const features = [
       "Make informed decisions with honest reviews from real couples. See photos, ratings, and detailed feedback to ensure the venue meets your expectations before booking.",
     image: "/images/hero-image-zaffaf.png",
     alt: "Couple reading venue reviews",
-    variant: "shape1" as MaskedImageVariant,
+    variant: "shape6" as MaskedImageVariant,
   },
   {
     title: "Book Essential Services",
@@ -29,7 +29,7 @@ const features = [
       "From caterers and photographers to florists and entertainers, easily browse and book all the services you need to make your wedding day perfect, all in one place.",
     image: "/images/hero-image-zaffaf.png",
     alt: "Wedding service providers",
-    variant: "shape6" as MaskedImageVariant,
+    variant: "shape3" as MaskedImageVariant,
   },
 ];
 
