@@ -11,7 +11,7 @@ const features = [
     title: "Find the Perfect Venue",
     description:
       "Explore a curated selection of stunning wedding and event venues from around the world. Filter by location, capacity, style, and price to find the perfect match for your special day.",
-    image: "/images/zaffaf-landing.png",
+    image: "/images/hero-image-zaffaf.png",
     alt: "Venue search interface",
     variant: "shape3" as MaskedImageVariant,
   },
@@ -19,7 +19,7 @@ const features = [
     title: "Read Authentic Reviews",
     description:
       "Make informed decisions with honest reviews from real couples. See photos, ratings, and detailed feedback to ensure the venue meets your expectations before booking.",
-    image: "/images/zaffaf-landing.png",
+    image: "/images/hero-image-zaffaf.png",
     alt: "Couple reading venue reviews",
     variant: "shape1" as MaskedImageVariant,
   },
@@ -27,7 +27,7 @@ const features = [
     title: "Book Essential Services",
     description:
       "From caterers and photographers to florists and entertainers, easily browse and book all the services you need to make your wedding day perfect, all in one place.",
-    image: "/images/zaffaf-landing.png",
+    image: "/images/hero-image-zaffaf.png",
     alt: "Wedding service providers",
     variant: "shape6" as MaskedImageVariant,
   },
@@ -35,7 +35,7 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-20 md:py-32 bg-gray-50">
+    <section className="py-20 md:py-32 ">
       <Container>
         <div className="text-center mb-16 md:mb-24">
           <h2 className="text-3xl md:text-5xl font-bold font-nunito mb-6">

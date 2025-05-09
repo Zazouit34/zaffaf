@@ -13,7 +13,7 @@ export function Hero() {
           <div className="relative aspect-[16/9] md:aspect-[21/9]">
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 z-10 rounded-2xl" />
             <Image
-              src="/images/hero-image-zaffaf.png"
+              src="/images/zaffaf-landing.png"
               alt="Wedding Venue"
               width={1920}
               height={1080}
