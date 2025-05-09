@@ -19,9 +19,9 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
+    <header className="fixed inset-x-0 top-0 z-50 bg-white shadow-md">
       <Container>
-        <nav className="flex items-center justify-between py-4">
+        <nav className="flex items-center justify-between py-5">
           <div className="flex lg:flex-1">
             <Link href="/" className="-m-1.5 p-1.5">
               <span className="font-bold text-2xl font-nunito text-primary">Zaffaf</span>

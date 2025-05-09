@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button";
 
 export function CTA() {
   return (
-    <section className="py-20 bg-primary">
+    <section className="py-24 md:py-32 bg-primary">
       <Container>
-        <div className="text-center">
-          <h2 className="text-3xl md:text-4xl font-bold font-nunito mb-4 text-white">
+        <div className="text-center max-w-3xl mx-auto px-4">
+          <h2 className="text-3xl md:text-5xl font-bold font-nunito mb-6 text-white">
             Ready to Find Your Dream Wedding Venue?
           </h2>
-          <p className="text-white/80 max-w-2xl mx-auto mb-8">
+          <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-10">
             Join thousands of couples who have found their perfect venue and planned their dream wedding with Zaffaf.
           </p>
-          <Button size="lg" className="bg-white text-primary hover:bg-white/90">
+          <Button size="lg" className="bg-white text-primary hover:bg-white/90 text-lg px-10 py-6">
             Get Started Now
           </Button>
         </div>

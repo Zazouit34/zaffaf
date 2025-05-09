@@ -35,18 +35,18 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-24 bg-gray-50">
+    <section className="py-20 md:py-32 bg-gray-50">
       <Container>
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold font-nunito mb-4">
+        <div className="text-center mb-16 md:mb-24">
+          <h2 className="text-3xl md:text-5xl font-bold font-nunito mb-6">
             How Zaffaf Works
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
             We make planning your wedding simple and stress-free with our comprehensive platform.
           </p>
         </div>
 
-        <div className="space-y-24">
+        <div className="space-y-32">
           {features.map((feature, index) => (
             <FeatureItem
               key={index}
@@ -87,7 +87,7 @@ function FeatureItem({
   return (
     <div
       ref={ref}
-      className={`grid md:grid-cols-2 gap-8 md:gap-12 items-center ${
+      className={`grid md:grid-cols-2 gap-10 md:gap-16 items-center ${
         reversed ? "md:grid-flow-dense" : ""
       }`}
       style={{
@@ -97,10 +97,12 @@ function FeatureItem({
       }}
     >
       <div className={reversed ? "md:col-start-2" : ""}>
-        <h3 className="text-2xl md:text-3xl font-bold font-nunito mb-4">
+        <h3 className="text-2xl md:text-4xl font-bold font-nunito mb-6">
           {title}
         </h3>
-        <p className="text-gray-600 mb-6">{description}</p>
+        <p className="text-gray-600 text-lg leading-relaxed">
+          {description}
+        </p>
       </div>
 
       <div className={reversed ? "md:col-start-1" : ""}>
