@@ -1,0 +1,384 @@
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Star, MapPin, Phone, Globe, Calendar, Check, Heart } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Mock data for venues
+const venues = [
+  {
+    id: "1",
+    name: "Grand Palace Wedding Hall",
+    address: "123 Luxury Ave, Beverly Hills, CA",
+    rating: 4.8,
+    price: "$3,000 - $10,000",
+    image: "/images/image-venue-landing.png",
+    description: "An elegant and spacious wedding hall with crystal chandeliers and marble floors. Perfect for large wedding ceremonies and receptions with a touch of luxury.",
+    capacity: "Up to 500 guests",
+    amenities: ["Bridal Suite", "Catering Services", "Valet Parking", "Sound System", "Lighting", "Dance Floor", "Outdoor Area"],
+    contactPhone: "+1 (555) 123-4567",
+    contactEmail: "info@grandpalaceweddings.com",
+    website: "https://www.grandpalaceweddings.com",
+    googleMapsUrl: "https://maps.google.com/?q=Grand+Palace+Wedding+Hall",
+    images: [
+      "/images/image-venue-landing.png",
+      "/images/zaffaf-landing.png",
+      "/images/hero-image-zaffaf.png",
+      "/images/service-zeffaf.jpeg",
+    ],
+    reviews: [
+      {
+        id: "r1",
+        user: "Sarah & Michael",
+        date: "June 15, 2023",
+        rating: 5,
+        comment: "We had our dream wedding at Grand Palace! The staff was incredibly helpful and the venue looked stunning."
+      },
+      {
+        id: "r2",
+        user: "Jennifer & David",
+        date: "April 22, 2023",
+        rating: 4,
+        comment: "Beautiful venue with great amenities. The only issue was parking for some of our guests."
+      },
+      {
+        id: "r3",
+        user: "Amanda & Robert",
+        date: "August 5, 2023",
+        rating: 5,
+        comment: "Perfect in every way! Our guests couldn't stop talking about how beautiful the venue was."
+      }
+    ]
+  },
+  {
+    id: "2",
+    name: "Seaside Ceremony Resort",
+    address: "456 Ocean Dr, Malibu, CA",
+    rating: 4.7,
+    price: "$5,000 - $15,000",
+    image: "/images/zaffaf-landing.png",
+    description: "A breathtaking beachfront venue with panoramic ocean views. Ideal for couples dreaming of a romantic seaside wedding ceremony and reception.",
+    capacity: "Up to 200 guests",
+    amenities: ["Beach Access", "Outdoor Ceremony Space", "Indoor Reception Hall", "Catering", "Bar Service", "Accommodation", "Photography Spots"],
+    contactPhone: "+1 (555) 987-6543",
+    contactEmail: "bookings@seasideceremony.com",
+    website: "https://www.seasideceremony.com",
+    googleMapsUrl: "https://maps.google.com/?q=Seaside+Ceremony+Resort+Malibu",
+    images: [
+      "/images/zaffaf-landing.png",
+      "/images/hero-image-zaffaf.png",
+      "/images/image-venue-landing.png",
+      "/images/service-zeffaf.jpeg",
+    ],
+    reviews: [
+      {
+        id: "r1",
+        user: "Emily & Jason",
+        date: "July 8, 2023",
+        rating: 5,
+        comment: "Our beach wedding was absolutely magical! The sunset ceremony was everything we dreamed of."
+      },
+      {
+        id: "r2",
+        user: "Melissa & Brian",
+        date: "May 14, 2023",
+        rating: 4,
+        comment: "Beautiful location but the wind was a bit challenging. Still, the staff handled everything professionally."
+      }
+    ]
+  },
+  {
+    id: "3",
+    name: "Mountain View Gardens",
+    address: "789 Highland Rd, Aspen, CO",
+    rating: 4.9,
+    price: "$4,500 - $12,000",
+    image: "/images/hero-image-zaffaf.png",
+    description: "A picturesque mountain venue surrounded by natural beauty. Features stunning gardens, a rustic barn, and breathtaking views of the mountains.",
+    capacity: "Up to 250 guests",
+    amenities: ["Garden Ceremony Space", "Rustic Barn Reception", "Mountain Views", "Fire Pit", "Outdoor Lighting", "Heaters for Evening", "Parking"],
+    contactPhone: "+1 (555) 456-7890",
+    contactEmail: "events@mountainviewgardens.com",
+    website: "https://www.mountainviewgardens.com",
+    googleMapsUrl: "https://maps.google.com/?q=Mountain+View+Gardens+Aspen",
+    images: [
+      "/images/hero-image-zaffaf.png",
+      "/images/image-venue-landing.png",
+      "/images/zaffaf-landing.png",
+      "/images/service-zeffaf.jpeg",
+    ],
+    reviews: [
+      {
+        id: "r1",
+        user: "Lauren & Christopher",
+        date: "September 12, 2023",
+        rating: 5,
+        comment: "The mountain backdrop made our wedding photos absolutely incredible! Highly recommend this venue."
+      },
+      {
+        id: "r2",
+        user: "Jessica & Thomas",
+        date: "August 28, 2023",
+        rating: 5,
+        comment: "Perfect venue for our rustic-themed wedding. The gardens were in full bloom and looked magical."
+      },
+      {
+        id: "r3",
+        user: "Rachel & Daniel",
+        date: "July 3, 2023",
+        rating: 4,
+        comment: "Beautiful location but it gets chilly in the evening, even in summer. Bring extra layers!"
+      }
+    ]
+  },
+  {
+    id: "4",
+    name: "Historic Downtown Chapel",
+    address: "101 Main St, Charleston, SC",
+    rating: 4.6,
+    price: "$2,000 - $7,500",
+    image: "/images/service-zeffaf.jpeg",
+    description: "A charming historic chapel in the heart of downtown. Features beautiful stained glass windows, classic architecture, and a cozy reception hall.",
+    capacity: "Up to 150 guests",
+    amenities: ["Historic Chapel", "Reception Hall", "Bridal Room", "Grand Piano", "Central Location", "Photography Allowed", "Wheelchair Accessible"],
+    contactPhone: "+1 (555) 234-5678",
+    contactEmail: "bookings@historicchapel.com",
+    website: "https://www.historicchapel.com",
+    googleMapsUrl: "https://maps.google.com/?q=Historic+Downtown+Chapel+Charleston",
+    images: [
+      "/images/service-zeffaf.jpeg",
+      "/images/image-venue-landing.png",
+      "/images/zaffaf-landing.png",
+      "/images/hero-image-zaffaf.png",
+    ],
+    reviews: [
+      {
+        id: "r1",
+        user: "Katherine & William",
+        date: "October 5, 2023",
+        rating: 5,
+        comment: "Such a beautiful historic venue with so much character! Perfect for our intimate wedding."
+      },
+      {
+        id: "r2",
+        user: "Elizabeth & James",
+        date: "May 30, 2023",
+        rating: 4,
+        comment: "Lovely chapel but limited parking in the downtown area. Plan accordingly."
+      }
+    ]
+  }
+];
+
+export default function VenueDetailPage({ params }: { params: { id: string } }) {
+  const venue = venues.find(v => v.id === params.id);
+  
+  if (!venue) {
+    notFound();
+  }
+
+  return (
+    <div className="container mx-auto py-10">
+      {/* Back button */}
+      <Link href="/venues" className="flex items-center gap-2 mb-6 text-sm hover:underline">
+        ← Back to venues
+      </Link>
+      
+      {/* Venue header */}
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold font-serif">{venue.name}</h1>
+          <div className="flex items-center gap-2 mt-2 text-sm">
+            <div className="flex items-center">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+              <span>{venue.rating.toFixed(1)}</span>
+              <span className="mx-1">•</span>
+              <span className="text-muted-foreground">{venue.reviews.length} reviews</span>
+            </div>
+            <span className="mx-1">•</span>
+            <div className="flex items-center">
+              <MapPin className="h-4 w-4 mr-1" />
+              <span>{venue.address}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Heart className="h-4 w-4" />
+            <span>Save</span>
+          </Button>
+          <Button>Contact Venue</Button>
+        </div>
+      </div>
+      
+      {/* Gallery */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="md:col-span-2 md:row-span-2 relative aspect-[4/3]">
+          <Image 
+            src={venue.images[0]} 
+            alt={venue.name}
+            fill
+            className="object-cover rounded-lg"
+          />
+        </div>
+        {venue.images.slice(1, 4).map((image, i) => (
+          <div key={i} className="relative aspect-[4/3]">
+            <Image 
+              src={image} 
+              alt={`${venue.name} - Image ${i+2}`}
+              fill
+              className="object-cover rounded-lg"
+            />
+          </div>
+        ))}
+      </div>
+      
+      {/* Content tabs */}
+      <Tabs defaultValue="overview" className="mb-10">
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="amenities">Amenities</TabsTrigger>
+          <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-2">
+              <h2 className="text-2xl font-bold font-serif mb-4">About this venue</h2>
+              <p className="text-muted-foreground mb-6">{venue.description}</p>
+              
+              <h3 className="text-xl font-bold font-serif mb-3">Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Capacity</Badge>
+                  <span>{venue.capacity}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Price Range</Badge>
+                  <span>{venue.price}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Book this venue</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="h-5 w-5" />
+                    <span>Check availability</span>
+                  </div>
+                  <Button className="w-full">Request Information</Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="amenities">
+          <h2 className="text-2xl font-bold font-serif mb-6">Amenities</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {venue.amenities.map((amenity, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Check className="h-5 w-5 text-green-500" />
+                <span>{amenity}</span>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="reviews">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold font-serif mb-2">Guest Reviews</h2>
+            <div className="flex items-center gap-2">
+              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <span className="font-bold">{venue.rating.toFixed(1)}</span>
+              <span className="text-muted-foreground">• {venue.reviews.length} reviews</span>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            {venue.reviews.map((review) => (
+              <div key={review.id} className="border-b pb-6">
+                <div className="flex justify-between mb-2">
+                  <h3 className="font-bold">{review.user}</h3>
+                  <span className="text-sm text-muted-foreground">{review.date}</span>
+                </div>
+                <div className="flex items-center mb-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star 
+                      key={i} 
+                      className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} 
+                    />
+                  ))}
+                </div>
+                <p className="text-sm">{review.comment}</p>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="contact">
+          <h2 className="text-2xl font-bold font-serif mb-6">Contact Information</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5" />
+                <div>
+                  <h3 className="font-bold">Phone</h3>
+                  <a href={`tel:${venue.contactPhone}`} className="text-blue-600 hover:underline">
+                    {venue.contactPhone}
+                  </a>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Globe className="h-5 w-5" />
+                <div>
+                  <h3 className="font-bold">Website</h3>
+                  <a href={venue.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {venue.website.replace('https://', '')}
+                  </a>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <MapPin className="h-5 w-5" />
+                <div>
+                  <h3 className="font-bold">Address</h3>
+                  <p>{venue.address}</p>
+                  <a href={venue.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                    View on Google Maps
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Send a Message</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    Contact the venue directly for more information about booking, pricing, and availability.
+                  </p>
+                  <Button className="w-full">Contact Venue</Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+} 
