@@ -366,13 +366,28 @@ export default function VenueDetailPage({ params }: { params: { id: string } }) 
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Send a Message</CardTitle>
+                  <CardTitle>Contact & Social</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    Contact the venue directly for more information about booking, pricing, and availability.
-                  </p>
-                  <Button className="w-full">Contact Venue</Button>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <a href={`tel:${venue.contactPhone}`} className="text-blue-600 hover:underline">
+                      {venue.contactPhone}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-muted-foreground" />
+                    <a href={venue.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      Visit Website
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <a href={venue.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      View on Google Maps
+                    </a>
+                  </div>
+                  <Button className="w-full mt-2">Contact Venue</Button>
                 </CardContent>
               </Card>
             </div>
