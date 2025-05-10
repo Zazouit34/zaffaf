@@ -92,8 +92,10 @@ export function Navbar() {
                 ))}
               </div>
               <div className="py-6">
-                <Button className="w-full">
-                  Commencer
+                <Button asChild className="w-full">
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    Commencer
+                  </Link>
                 </Button>
               </div>
             </div>
