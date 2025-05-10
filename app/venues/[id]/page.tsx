@@ -180,6 +180,13 @@ interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
+export async function generateStaticParams() {
+  // Return an array of params to pre-render
+  return venues.map((venue) => ({
+    id: venue.id,
+  }));
+}
+
 export default async function VenueDetailPage({ params, searchParams }: PageProps) {
   // Await the params since it's now a Promise
   const resolvedParams = await params;
