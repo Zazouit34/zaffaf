@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, MapPin, Clock, Phone, Globe, ChevronLeft, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { constructPhotoUrl } from "@/lib/utils/photo-utils";
 
 interface VenuePageProps {
   params: {
@@ -41,12 +42,12 @@ export default async function VenuePage({ params }: VenuePageProps) {
   // Get photos or use placeholder
   const photos = venue.photos || [];
   const mainPhotoUrl = photos.length > 0 
-    ? getPhotoUrl(photos[0].photo_reference, 1200)
+    ? constructPhotoUrl(photos[0].photo_reference, 1200)
     : "/images/venue-placeholder.jpg";
   
   // Additional photos (up to 4)
   const additionalPhotos = photos.slice(1, 5).map(photo => 
-    getPhotoUrl(photo.photo_reference, 600)
+    constructPhotoUrl(photo.photo_reference, 600)
   );
   
   // Format the phone number

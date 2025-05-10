@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star, MapPin, Clock, Phone } from "lucide-react";
-import { GooglePlaceResult, getPhotoUrl } from "@/lib/actions/venues";
+import { GooglePlaceResult } from "@/lib/actions/venues";
 import { cn } from "@/lib/utils";
+import { constructPhotoUrl } from "@/lib/utils/photo-utils";
 
 interface VenueCardProps {
   venue: GooglePlaceResult;
@@ -12,7 +13,7 @@ interface VenueCardProps {
 export function VenueCard({ venue, className }: VenueCardProps) {
   // Get the first photo or use a placeholder
   const photoUrl = venue.photos && venue.photos.length > 0
-    ? getPhotoUrl(venue.photos[0].photo_reference, 600)
+    ? constructPhotoUrl(venue.photos[0].photo_reference, 600)
     : "/images/venue-placeholder.jpg";
 
   // Format the address to show only the most relevant part

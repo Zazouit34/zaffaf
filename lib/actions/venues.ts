@@ -47,7 +47,7 @@ const GOOGLE_API_KEY = 'AIzaSyCX0FSwT9Mb7vrv_5jzLy3aOfSEdta38s8';
 const PHOTO_BASE_URL = 'https://maps.googleapis.com/maps/api/place/photo';
 
 // Helper function to get photo URL from photo reference
-export function getPhotoUrl(photoReference: string, maxWidth: number = 400): string {
+export async function getPhotoUrl(photoReference: string, maxWidth: number = 400): Promise<string> {
   return `${PHOTO_BASE_URL}?maxwidth=${maxWidth}&photo_reference=${photoReference}&key=${GOOGLE_API_KEY}`;
 }
 
