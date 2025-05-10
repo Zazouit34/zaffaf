@@ -177,13 +177,16 @@ const venues = [
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function VenueDetailPage({ params, searchParams }: PageProps) {
   // Await the params since it's now a Promise
   const resolvedParams = await params;
   const venue = venues.find(v => v.id === resolvedParams.id);
+  
+  // We can also await searchParams if needed
+  // const resolvedSearchParams = await searchParams;
   
   if (!venue) {
     notFound();
