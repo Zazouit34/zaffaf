@@ -27,9 +27,9 @@ const features = [
     title: "Réservez des Services Essentiels",
     description:
       "Des traiteurs aux photographes, en passant par les fleuristes et les animateurs, parcourez et réservez facilement tous les services nécessaires pour rendre votre journée de mariage parfaite, le tout au même endroit.",
-    image: "/images/hero-image-zaffaf.png",
+    image: "/images/service-zeffaf.jpeg",
     alt: "Prestataires de services de mariage",
-    variant: "shape3" as MaskedImageVariant,
+    variant: "shape4" as MaskedImageVariant,
   },
 ];
 
