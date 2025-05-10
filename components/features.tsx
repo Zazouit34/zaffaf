@@ -10,7 +10,7 @@ const features = [
   {
     title: "Trouvez le Lieu Parfait",
     description:
-      "Explorez une sélection soignée de lieux de mariage et d'événements à travers le monde. Filtrez par lieu, capacité, style et prix pour trouver l'endroit idéal pour votre journée spéciale.",
+      "Explorez une sélection soignée de lieux de mariage et d'événements à travers l'Algerie. Filtrez par lieu, capacité, style et prix pour trouver l'endroit idéal pour votre journée spéciale.",
     image: "/images/image-venue-landing.png",
     alt: "Interface de recherche de lieux",
     variant: "shape1" as MaskedImageVariant,
