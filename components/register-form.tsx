@@ -5,66 +5,74 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useState } from "react"
 import { auth, db } from "@/lib/firebase"
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from "firebase/auth"
 import { useRouter } from "next/navigation"
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
+import { doc, setDoc, serverTimestamp } from "firebase/firestore"
 
-export function LoginForm({
+export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
 
-  const checkAndCreateUserInFirestore = async (user: any) => {
+  const saveUserToFirestore = async (userId: string, userData: any) => {
     try {
-      // Check if user exists in Firestore
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (!userSnap.exists()) {
-        // User doesn't exist in Firestore, create a new document
-        const nameParts = user.displayName ? user.displayName.split(' ') : ['', ''];
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
-        
-        await setDoc(userRef, {
-          firstName,
-          lastName,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          isAdmin: false
-        });
-      }
+      await setDoc(doc(db, "users", userId), {
+        ...userData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        isAdmin: false
+      });
     } catch (error) {
-      console.error("Error checking/creating user in Firestore:", error);
+      console.error("Error saving user data:", error);
+      throw error;
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    
+    if (password !== confirmPassword) {
+      setError("Les mots de passe ne correspondent pas")
+      return
+    }
 
     try {
       setLoading(true)
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      const user = userCredential.user;
       
-      // Check and create user in Firestore if needed
-      await checkAndCreateUserInFirestore(userCredential.user);
+      // Update profile with name
+      const fullName = `${firstName} ${lastName}`.trim();
+      await updateProfile(user, {
+        displayName: fullName
+      });
       
-      // After successful login, redirect to dashboard
-      router.push("/dashboard")
+      // Save user data to Firestore
+      await saveUserToFirestore(user.uid, {
+        firstName,
+        lastName,
+        email,
+        displayName: fullName,
+        photoURL: user.photoURL,
+      });
+      
+      // After successful registration, redirect to login
+      router.push("/login")
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
       } else {
-        setError("Une erreur s'est produite lors de la connexion")
+        setError("Une erreur s'est produite lors de l'inscription")
       }
     } finally {
       setLoading(false)
@@ -76,9 +84,20 @@ export function LoginForm({
       setLoading(true)
       const provider = new GoogleAuthProvider()
       const result = await signInWithPopup(auth, provider)
+      const user = result.user;
       
-      // Check and create user in Firestore if needed
-      await checkAndCreateUserInFirestore(result.user);
+      // Save Google user data to Firestore
+      const nameParts = user.displayName ? user.displayName.split(' ') : ['', ''];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      await saveUserToFirestore(user.uid, {
+        firstName,
+        lastName,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+      });
       
       router.push("/dashboard")
     } catch (err) {
@@ -95,9 +114,9 @@ export function LoginForm({
   return (
     <form className={cn("flex flex-col gap-6", className)} {...props} onSubmit={handleSubmit}>
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold font-nunito">Connectez-vous à votre compte</h1>
+        <h1 className="text-2xl font-bold font-nunito">Créez votre compte</h1>
         <p className="text-muted-foreground text-sm text-balance">
-          Entrez votre email ci-dessous pour vous connecter
+          Entrez vos informations ci-dessous pour créer un compte
         </p>
       </div>
       {error && (
@@ -106,6 +125,28 @@ export function LoginForm({
         </div>
       )}
       <div className="grid gap-6">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-1">
+            <Label htmlFor="firstName">Prénom</Label>
+            <Input 
+              id="firstName" 
+              type="text" 
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required 
+            />
+          </div>
+          <div className="grid gap-1">
+            <Label htmlFor="lastName">Nom</Label>
+            <Input 
+              id="lastName" 
+              type="text" 
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required 
+            />
+          </div>
+        </div>
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
           <Input 
@@ -118,15 +159,7 @@ export function LoginForm({
           />
         </div>
         <div className="grid gap-3">
-          <div className="flex items-center">
-            <Label htmlFor="password">Mot de passe</Label>
-            <a
-              href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
-              Mot de passe oublié ?
-            </a>
-          </div>
+          <Label htmlFor="password">Mot de passe</Label>
           <Input 
             id="password" 
             type="password" 
@@ -135,8 +168,18 @@ export function LoginForm({
             required 
           />
         </div>
+        <div className="grid gap-3">
+          <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+          <Input 
+            id="confirmPassword" 
+            type="password" 
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required 
+          />
+        </div>
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Connexion en cours..." : "Se connecter"}
+          {loading ? "Inscription en cours..." : "S'inscrire"}
         </Button>
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">
@@ -168,15 +211,15 @@ export function LoginForm({
               fill="#EA4335"
             />
           </svg>
-          {loading ? "Connexion en cours..." : "Se connecter avec Google"}
+          {loading ? "Connexion en cours..." : "S'inscrire avec Google"}
         </Button>
       </div>
       <div className="text-center text-sm">
-        Vous n&apos;avez pas de compte ?{" "}
-        <Link href="/register" className="underline underline-offset-4 text-primary font-medium">
-          S&apos;inscrire
+        Vous avez déjà un compte ?{" "}
+        <Link href="/login" className="underline underline-offset-4 text-primary font-medium">
+          Se connecter
         </Link>
       </div>
     </form>
   )
-}
+} 

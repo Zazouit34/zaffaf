@@ -1,12 +1,12 @@
 "use client";
 
-import { LoginForm } from "@/components/login-form"
+import { RegisterForm } from "@/components/register-form"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -33,8 +33,8 @@ export default function LoginPage() {
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <LoginForm />
+          <div className="w-full max-w-md">
+            <RegisterForm />
           </div>
         </div>
       </div>
@@ -47,11 +47,11 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30"></div>
         <div className="absolute inset-0 flex items-center justify-center text-white">
           <div className="max-w-md text-center p-8">
-            <h2 className="text-3xl font-bold font-nunito mb-4">Planifiez le mariage de vos rêves</h2>
-            <p className="text-white/80">Trouvez les meilleurs lieux de mariage et services pour votre journée spéciale</p>
+            <h2 className="text-3xl font-bold font-nunito mb-4">Rejoignez notre communauté</h2>
+            <p className="text-white/80">Créez un compte pour accéder à tous nos services et trouver le lieu de mariage parfait</p>
           </div>
         </div>
       </div>
     </div>
   )
-}
+} 
