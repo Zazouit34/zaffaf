@@ -175,15 +175,15 @@ const venues = [
   }
 ];
 
-type Props = {
-  params: {
-    id: string;
-  };
-  searchParams: Record<string, string | string[] | undefined>;
-};
+interface PageProps {
+  params: Promise<{ id: string }>;
+  searchParams?: Record<string, string | string[] | undefined>;
+}
 
-export default function VenueDetailPage({ params, searchParams }: Props) {
-  const venue = venues.find(v => v.id === params.id);
+export default async function VenueDetailPage({ params, searchParams }: PageProps) {
+  // Await the params since it's now a Promise
+  const resolvedParams = await params;
+  const venue = venues.find(v => v.id === resolvedParams.id);
   
   if (!venue) {
     notFound();
