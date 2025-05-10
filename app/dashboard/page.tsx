@@ -78,26 +78,31 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
           <Link href="/" className="flex items-center gap-2 font-medium">
             <span className="font-bold text-2xl font-nunito text-primary">Zaffaf</span>
           </Link>
-          <div className="flex items-center gap-4">
-            {userData?.photoURL ? (
-              <img 
-                src={userData.photoURL} 
-                alt="Profile" 
-                className="h-8 w-8 rounded-full"
-              />
-            ) : (
-              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                <User size={16} className="text-muted-foreground" />
-              </div>
-            )}
-            <span className="text-sm">
-              Bonjour, {userData?.firstName || user.email}
-            </span>
-            <Button variant="outline" onClick={handleSignOut}>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-4 w-full sm:w-auto">
+            <div className="flex items-center gap-2">
+              {userData?.photoURL ? (
+                <img 
+                  src={userData.photoURL} 
+                  alt="Profile" 
+                  className="h-8 w-8 rounded-full"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                  <User size={16} className="text-muted-foreground" />
+                </div>
+              )}
+              <span className="text-sm hidden sm:inline">
+                Bonjour, {userData?.firstName || user.email?.split('@')[0]}
+              </span>
+              <span className="text-sm sm:hidden">
+                {userData?.firstName || user.email?.split('@')[0]}
+              </span>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleSignOut} className="whitespace-nowrap">
               Se déconnecter
             </Button>
           </div>
