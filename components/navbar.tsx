@@ -49,8 +49,8 @@ export function Navbar() {
             ))}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <Button>
-              Commencer
+            <Button asChild>
+              <Link href="/login">Commencer</Link>
             </Button>
           </div>
         </nav>
