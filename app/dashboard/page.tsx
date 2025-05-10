@@ -9,6 +9,7 @@ import { auth, db } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
+import { ProfileEditDialog } from "@/components/profile-edit-dialog";
 
 interface UserData {
   firstName: string;
@@ -32,25 +33,25 @@ export default function DashboardPage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (user) {
-        try {
-          setLoadingUserData(true);
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
-          
-          if (userSnap.exists()) {
-            setUserData(userSnap.data() as UserData);
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        } finally {
-          setLoadingUserData(false);
+  const fetchUserData = async () => {
+    if (user) {
+      try {
+        setLoadingUserData(true);
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          setUserData(userSnap.data() as UserData);
         }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoadingUserData(false);
       }
-    };
-    
+    }
+  };
+
+  useEffect(() => {
     fetchUserData();
   }, [user]);
 
@@ -61,6 +62,11 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error signing out:", error);
     }
+  };
+
+  const handleProfileUpdate = () => {
+    // Refresh user data after profile update
+    fetchUserData();
   };
 
   if (loading || loadingUserData) {
@@ -134,7 +140,17 @@ export default function DashboardPage() {
                 Complétez votre profil pour une expérience personnalisée.
               </p>
             )}
-            <Button variant="outline" className="w-full">Modifier le profil</Button>
+            {userData && user && (
+              <ProfileEditDialog 
+                userData={userData} 
+                userId={user.uid} 
+                onProfileUpdate={handleProfileUpdate}
+              >
+                <Button variant="outline" className="w-full">
+                  Modifier le profil
+                </Button>
+              </ProfileEditDialog>
+            )}
           </div>
           
           <div className="bg-card rounded-lg shadow p-6">
