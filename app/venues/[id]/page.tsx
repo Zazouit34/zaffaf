@@ -10,14 +10,13 @@ import { cn } from "@/lib/utils";
 import { constructPhotoUrl } from "@/lib/utils/photo-utils";
 
 interface VenuePageProps {
-  params: {
-    id: string;
-  };
-  searchParams: Record<string, string | string[] | undefined>;
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: VenuePageProps) {
-  const venueDetails = await getVenueDetails(params.id);
+  const { id } = await params;
+  const venueDetails = await getVenueDetails(id);
   
   if (!venueDetails || venueDetails.status !== "OK") {
     return {
@@ -32,7 +31,8 @@ export async function generateMetadata({ params }: VenuePageProps) {
 }
 
 export default async function VenuePage({ params }: VenuePageProps) {
-  const venueDetails = await getVenueDetails(params.id);
+  const { id } = await params;
+  const venueDetails = await getVenueDetails(id);
   
   if (!venueDetails || venueDetails.status !== "OK") {
     notFound();
