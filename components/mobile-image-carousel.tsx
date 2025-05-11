@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MobileImageCarouselProps {
   images: string[];
@@ -64,23 +63,6 @@ export function MobileImageCarousel({ images, alt }: MobileImageCarouselProps) {
           sizes="100vw"
           priority={currentIndex === 0}
         />
-        
-        {/* Navigation arrows */}
-        <button 
-          onClick={(e) => { e.stopPropagation(); goToPrevious(); }} 
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 rounded-full p-1.5 text-white"
-          aria-label="Previous image"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        
-        <button 
-          onClick={(e) => { e.stopPropagation(); goToNext(); }} 
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 rounded-full p-1.5 text-white"
-          aria-label="Next image"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
       </div>
       
       {/* Indicators */}
