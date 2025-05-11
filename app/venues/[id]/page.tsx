@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/app-layout";
 import { MobileImageCarousel } from "@/components/mobile-image-carousel";
 import { VenueContactDialog } from "@/components/venue-contact-dialog";
 import axios from "axios";
+import { getCities, searchWeddingVenues } from "@/app/services/googlePlacesService";
 
 // Type definitions
 interface Review {
@@ -119,9 +120,23 @@ async function getVenueDetails(id: string): Promise<Venue | null> {
 export const revalidate = 3600; // Revalidate every hour
 
 export async function generateStaticParams() {
-  // Return an array of params to pre-render
-  // For now, we'll return an empty array as we'll fetch dynamically
-  return [];
+  try {
+    // Get all cities
+    const cities = await getCities();
+    const allVenueParams = [];
+    
+    // For each city, get venues and extract their IDs
+    for (const city of cities) {
+      const venues = await searchWeddingVenues(city.id);
+      const venueParams = venues.map((venue: { id: string }) => ({ id: venue.id }));
+      allVenueParams.push(...venueParams);
+    }
+    
+    return allVenueParams;
+  } catch (error) {
+    console.error("Error generating static params:", error);
+    return [];
+  }
 }
 
 interface PageProps {
