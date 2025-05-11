@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/components/app-layout";
+import { MobileImageCarousel } from "@/components/mobile-image-carousel";
+import { VenueContactDialog } from "@/components/venue-contact-dialog";
 
 // Type definitions
 interface Review {
@@ -233,15 +235,15 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold font-serif">{venue.name}</h1>
-          <div className="flex items-center gap-2 mt-2 text-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2 text-sm">
             <div className="flex items-center">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
               <span>{venue.rating.toFixed(1)}</span>
               <span className="mx-1">•</span>
               <span className="text-muted-foreground">{venue.reviews.length} reviews</span>
             </div>
-            <span className="mx-1">•</span>
-            <div className="flex items-center">
+            <span className="mx-1 hidden sm:inline">•</span>
+            <div className="flex items-center mt-1 sm:mt-0">
               <MapPin className="h-4 w-4 mr-1" />
               <span>{venue.address}</span>
             </div>
@@ -252,41 +254,41 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
             <Heart className="h-4 w-4" />
             <span>Save</span>
           </Button>
-          <Button>Contact Venue</Button>
+          <VenueContactDialog venue={venue}>
+            <Button>Contact Venue</Button>
+          </VenueContactDialog>
         </div>
       </div>
       
       {/* Gallery */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-8">
-        <div className="col-span-1 sm:col-span-2 sm:row-span-2 relative aspect-[4/3]">
-          <Image 
-            src={venue.images[0]} 
-            alt={venue.name}
-            fill
-            className="object-cover rounded-lg"
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-            priority
-          />
+      <div className="mb-8">
+        {/* Mobile carousel */}
+        <div className="block sm:hidden">
+          <MobileImageCarousel images={venue.images} alt={venue.name} />
         </div>
-        {venue.images.slice(1, 4).map((image, i) => (
-          <div key={i} className="hidden sm:block relative aspect-[4/3]">
+        
+        {/* Desktop gallery */}
+        <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="sm:col-span-2 sm:row-span-2 relative aspect-[4/3]">
             <Image 
-              src={image} 
-              alt={`${venue.name} - Image ${i+2}`}
+              src={venue.images[0]} 
+              alt={venue.name}
               fill
               className="object-cover rounded-lg"
-              sizes="(max-width: 768px) 50vw, 25vw"
+              sizes="(max-width: 768px) 50vw, 33vw"
+              priority
             />
           </div>
-        ))}
-        
-        {/* Mobile image carousel indicator */}
-        <div className="flex justify-center mt-2 gap-1 sm:hidden">
-          {venue.images.slice(0, 4).map((_, i) => (
-            <div 
-              key={i} 
-              className={`h-1.5 rounded-full ${i === 0 ? 'w-4 bg-primary' : 'w-1.5 bg-gray-300'}`}
-            />
+          {venue.images.slice(1, 4).map((image, i) => (
+            <div key={i} className="relative aspect-[4/3]">
+              <Image 
+                src={image} 
+                alt={`${venue.name} - Image ${i+2}`}
+                fill
+                className="object-cover rounded-lg"
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -297,7 +299,6 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
           <TabsTrigger value="overview" className="px-3 sm:px-4 py-2 text-sm">Overview</TabsTrigger>
           <TabsTrigger value="amenities" className="px-3 sm:px-4 py-2 text-sm">Amenities</TabsTrigger>
           <TabsTrigger value="reviews" className="px-3 sm:px-4 py-2 text-sm">Reviews</TabsTrigger>
-          <TabsTrigger value="contact" className="px-3 sm:px-4 py-2 text-sm">Contact</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">
@@ -329,7 +330,9 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
                     <Calendar className="h-5 w-5 text-primary" />
                     <span>Check availability</span>
                   </div>
-                  <Button className="w-full text-base py-5 sm:py-2">Request Information</Button>
+                  <VenueContactDialog venue={venue}>
+                    <Button className="w-full text-base py-5 sm:py-2">Request Information</Button>
+                  </VenueContactDialog>
                 </CardContent>
               </Card>
             </div>
@@ -378,74 +381,6 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
             ))}
           </div>
         </TabsContent>
-        
-        <TabsContent value="contact">
-          <h2 className="text-2xl font-bold font-serif mb-6">Contact Information</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5" />
-                <div>
-                  <h3 className="font-bold">Phone</h3>
-                  <a href={`tel:${venue.contactPhone}`} className="text-blue-600 hover:underline">
-                    {venue.contactPhone}
-                  </a>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Globe className="h-5 w-5" />
-                <div>
-                  <h3 className="font-bold">Website</h3>
-                  <a href={venue.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                    {venue.website.replace('https://', '')}
-                  </a>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5" />
-                <div>
-                  <h3 className="font-bold">Address</h3>
-                  <p>{venue.address}</p>
-                  <a href={venue.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
-                    View on Google Maps
-                  </a>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contact & Social</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <a href={`tel:${venue.contactPhone}`} className="text-blue-600 hover:underline">
-                      {venue.contactPhone}
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-muted-foreground" />
-                    <a href={venue.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      Visit Website
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <a href={venue.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      View on Google Maps
-                    </a>
-                  </div>
-                  <Button className="w-full mt-2">Contact Venue</Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
       </Tabs>
 
       {/* Fixed bottom action bar on mobile */}
@@ -454,8 +389,13 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
           <Heart className="h-4 w-4" />
           <span>Save</span>
         </Button>
-        <Button className="flex-1">Contact Venue</Button>
+        <VenueContactDialog venue={venue}>
+          <Button className="flex-1">Contact Venue</Button>
+        </VenueContactDialog>
       </div>
+      
+      {/* Add padding at the bottom on mobile to account for the fixed bar */}
+      <div className="h-16 sm:hidden"></div>
     </AppLayout>
   );
 } 
