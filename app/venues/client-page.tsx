@@ -1,0 +1,30 @@
+"use client";
+
+import { VenueCard } from "@/components/venue-card";
+import { AppLayout } from "@/components/app-layout";
+import { Venue } from "@/app/actions/venues";
+
+interface VenuesClientPageProps {
+  venues: Venue[];
+}
+
+export function VenuesClientPage({ venues }: VenuesClientPageProps) {
+  return (
+    <AppLayout requireAuth={true}>
+      <h1 className="text-3xl font-bold mb-6 font-serif">Lieux de Mariage</h1>
+      <p className="text-muted-foreground mb-8">
+        Trouvez le lieu parfait pour votre jour spécial. Parcourez notre sélection de lieux de mariage premium.
+      </p>
+      
+      {venues.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {venues.map((venue) => (
+            <VenueCard key={venue.id} {...venue} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-center py-10">Aucun lieu trouvé. Veuillez réessayer plus tard.</p>
+      )}
+    </AppLayout>
+  );
+} 
