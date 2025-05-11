@@ -87,12 +87,7 @@ export async function fetchVenues(): Promise<Venue[]> {
     // Flatten the array of arrays into a single array of venues
     const allVenues = cityResults.flat();
     
-    // Limit to a reasonable number if there are too many results
-    const maxVenues = 24; // Show at most 24 venues
-    if (allVenues.length > maxVenues) {
-      return allVenues.slice(0, maxVenues);
-    }
-    
+    // Return all venues without limiting
     return allVenues;
   } catch (error) {
     console.error('Error fetching venues:', error);
