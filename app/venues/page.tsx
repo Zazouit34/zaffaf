@@ -1,4 +1,7 @@
+"use client";
+
 import { VenueCard } from "@/components/venue-card";
+import { AppLayout } from "@/components/app-layout";
 
 // Mock data for venues
 const venues = [
@@ -42,7 +45,7 @@ const venues = [
 
 export default function VenuesPage() {
   return (
-    <div className="container mx-auto py-10">
+    <AppLayout requireAuth={true}>
       <h1 className="text-3xl font-bold mb-6 font-serif">Wedding Venues</h1>
       <p className="text-muted-foreground mb-8">
         Find the perfect venue for your special day. Browse our selection of premium wedding venues.
@@ -53,6 +56,6 @@ export default function VenuesPage() {
           <VenueCard key={venue.id} {...venue} />
         ))}
       </div>
-    </div>
+    </AppLayout>
   );
 } 

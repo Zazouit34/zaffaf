@@ -1,13 +1,42 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Star, MapPin, Phone, Globe, Calendar, Check, Heart, ArrowLeft } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppLayout } from "@/components/app-layout";
+import { useEffect, useState } from "react";
+
+// Add these type definitions at the top of the file
+interface Review {
+  id: string;
+  user: string;
+  date: string;
+  rating: number;
+  comment: string;
+}
+
+interface Venue {
+  id: string;
+  name: string;
+  address: string;
+  rating: number;
+  price: string;
+  image: string;
+  description: string;
+  capacity: string;
+  amenities: string[];
+  contactPhone: string;
+  contactEmail: string;
+  website: string;
+  googleMapsUrl: string;
+  images: string[];
+  reviews: Review[];
+}
 
 // Mock data for venues
 const venues = [
@@ -175,36 +204,42 @@ const venues = [
   }
 ];
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}
+export default function VenueDetailPage({ params }: { params: { id: string } }) {
+  const [venue, setVenue] = useState<Venue | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export async function generateStaticParams() {
-  // Return an array of params to pre-render
-  return venues.map((venue) => ({
-    id: venue.id,
-  }));
-}
+  useEffect(() => {
+    // Find the venue based on the ID
+    const foundVenue = venues.find(v => v.id === params.id);
+    setVenue(foundVenue || null);
+    setLoading(false);
+    
+    if (!foundVenue) {
+      notFound();
+    }
+  }, [params.id]);
 
-export default async function VenueDetailPage({ params, searchParams }: PageProps) {
-  // Await the params since it's now a Promise
-  const resolvedParams = await params;
-  const venue = venues.find(v => v.id === resolvedParams.id);
-  
-  // We can also await searchParams if needed
-  // const resolvedSearchParams = await searchParams;
-  
+  if (loading) {
+    return (
+      <AppLayout requireAuth={true}>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   if (!venue) {
-    notFound();
+    return null; // Will be handled by notFound() in useEffect
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <AppLayout requireAuth={true}>
       {/* Back button */}
       <Link href="/venues" className="flex items-center gap-2 mb-6 text-sm hover:underline">
         <ArrowLeft className="h-4 w-4" /> Back to venues
       </Link>
+      
       {/* Venue header */}
       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
         <div>
@@ -242,7 +277,7 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
             className="object-cover rounded-lg"
           />
         </div>
-        {venue.images.slice(1, 4).map((image, i) => (
+        {venue.images.slice(1, 4).map((image: string, i: number) => (
           <div key={i} className="relative aspect-[4/3]">
             <Image 
               src={image} 
@@ -302,7 +337,7 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
         <TabsContent value="amenities">
           <h2 className="text-2xl font-bold font-serif mb-6">Amenities</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {venue.amenities.map((amenity, i) => (
+            {venue.amenities.map((amenity: string, i: number) => (
               <div key={i} className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-500" />
                 <span>{amenity}</span>
@@ -322,7 +357,7 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
           </div>
           
           <div className="space-y-6">
-            {venue.reviews.map((review) => (
+            {venue.reviews.map((review: Review) => (
               <div key={review.id} className="border-b pb-6">
                 <div className="flex justify-between mb-2">
                   <h3 className="font-bold">{review.user}</h3>
@@ -410,6 +445,6 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </AppLayout>
   );
 } 
