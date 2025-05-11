@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,9 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/components/app-layout";
-import { useEffect, useState } from "react";
 
-// Add these type definitions at the top of the file
+// Type definitions
 interface Review {
   id: string;
   user: string;
@@ -39,7 +36,7 @@ interface Venue {
 }
 
 // Mock data for venues
-const venues = [
+const venues: Venue[] = [
   {
     id: "1",
     name: "Grand Palace Wedding Hall",
@@ -204,33 +201,25 @@ const venues = [
   }
 ];
 
-export default function VenueDetailPage({ params }: { params: { id: string } }) {
-  const [venue, setVenue] = useState<Venue | null>(null);
-  const [loading, setLoading] = useState(true);
+interface PageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
 
-  useEffect(() => {
-    // Find the venue based on the ID
-    const foundVenue = venues.find(v => v.id === params.id);
-    setVenue(foundVenue || null);
-    setLoading(false);
-    
-    if (!foundVenue) {
-      notFound();
-    }
-  }, [params.id]);
+export async function generateStaticParams() {
+  // Return an array of params to pre-render
+  return venues.map((venue) => ({
+    id: venue.id,
+  }));
+}
 
-  if (loading) {
-    return (
-      <AppLayout requireAuth={true}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </AppLayout>
-    );
-  }
-
+export default async function VenueDetailPage({ params, searchParams }: PageProps) {
+  // Await the params since it's now a Promise
+  const resolvedParams = await params;
+  const venue = venues.find(v => v.id === resolvedParams.id);
+  
   if (!venue) {
-    return null; // Will be handled by notFound() in useEffect
+    notFound();
   }
 
   return (
@@ -277,7 +266,7 @@ export default function VenueDetailPage({ params }: { params: { id: string } }) 
             className="object-cover rounded-lg"
           />
         </div>
-        {venue.images.slice(1, 4).map((image: string, i: number) => (
+        {venue.images.slice(1, 4).map((image, i) => (
           <div key={i} className="relative aspect-[4/3]">
             <Image 
               src={image} 
@@ -337,7 +326,7 @@ export default function VenueDetailPage({ params }: { params: { id: string } }) 
         <TabsContent value="amenities">
           <h2 className="text-2xl font-bold font-serif mb-6">Amenities</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {venue.amenities.map((amenity: string, i: number) => (
+            {venue.amenities.map((amenity, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-500" />
                 <span>{amenity}</span>
@@ -357,7 +346,7 @@ export default function VenueDetailPage({ params }: { params: { id: string } }) 
           </div>
           
           <div className="space-y-6">
-            {venue.reviews.map((review: Review) => (
+            {venue.reviews.map((review) => (
               <div key={review.id} className="border-b pb-6">
                 <div className="flex justify-between mb-2">
                   <h3 className="font-bold">{review.user}</h3>
