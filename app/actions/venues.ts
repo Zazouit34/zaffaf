@@ -36,30 +36,28 @@ export async function fetchVenues(): Promise<Venue[]> {
     }
     
     // Transform the API response into our venue format
-    const venues: Venue[] = await Promise.all(
-      response.data.results.map(async (place: any) => {
-        // Get a photo URL if available
-        let photoUrl = '/images/venue-placeholder.jpg';
-        
-        if (place.photos && place.photos.length > 0) {
-          const photoReference = place.photos[0].photo_reference;
-          photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoReference}&key=${API_KEY}`;
-        }
-        
-        // Default price range since Google Places doesn't provide pricing
-        const priceRange = "Sur demande";
-        
-        return {
-          id: place.place_id,
-          name: place.name,
-          address: place.formatted_address,
-          rating: place.rating || 0,
-          price: priceRange,
-          image: photoUrl,
-          isFavorite: false
-        };
-      })
-    );
+    const venues: Venue[] = response.data.results.map((place: any) => {
+      // Get a photo URL if available
+      let photoUrl = '/images/venue-placeholder.jpg';
+      
+      if (place.photos && place.photos.length > 0) {
+        const photoReference = place.photos[0].photo_reference;
+        photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoReference}&key=${API_KEY}`;
+      }
+      
+      // Default price range since Google Places doesn't provide pricing
+      const priceRange = "Sur demande";
+      
+      return {
+        id: place.place_id,
+        name: place.name,
+        address: place.formatted_address,
+        rating: place.rating || 0,
+        price: priceRange,
+        image: photoUrl,
+        isFavorite: false
+      };
+    });
     
     return venues;
   } catch (error) {
