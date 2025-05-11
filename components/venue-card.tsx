@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, MapPin } from "lucide-react";
 import { useState } from "react";
 
 import { 
@@ -23,6 +23,7 @@ interface VenueCardProps {
   price: string;
   image: string;
   isFavorite?: boolean;
+  city?: string;
 }
 
 export function VenueCard({ 
@@ -32,7 +33,8 @@ export function VenueCard({
   rating, 
   price, 
   image, 
-  isFavorite = false 
+  isFavorite = false,
+  city
 }: VenueCardProps) {
   const [favorite, setFavorite] = useState(isFavorite);
 
@@ -40,7 +42,7 @@ export function VenueCard({
     e.preventDefault();
     e.stopPropagation();
     setFavorite(!favorite);
-    // Here you would typically call an API to save the favorite status
+    // Ici vous appelleriez généralement une API pour sauvegarder l'état des favoris
   };
 
   return (
@@ -64,8 +66,16 @@ export function VenueCard({
               <Heart
                 className={`h-5 w-5 ${favorite ? "fill-red-500 text-red-500" : "text-gray-500"}`}
               />
-              <span className="sr-only">Add to favorites</span>
+              <span className="sr-only">Ajouter aux favoris</span>
             </Button>
+            {city && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                <div className="flex items-center text-white">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  <span className="text-sm font-medium">{city}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <CardHeader className="pb-2">
@@ -82,7 +92,7 @@ export function VenueCard({
         </CardContent>
         <CardFooter className="flex justify-between">
           <Badge variant="outline" className="font-normal">
-            Wedding Venue
+            Salle de fête
           </Badge>
           <p className="font-medium">{price}</p>
         </CardFooter>
