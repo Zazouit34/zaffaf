@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/components/app-layout";
 import { MobileImageCarousel } from "@/components/mobile-image-carousel";
 import { VenueContactDialog } from "@/components/venue-contact-dialog";
+import axios from "axios";
 
 // Type definitions
 interface Review {
@@ -35,190 +36,101 @@ interface Venue {
   googleMapsUrl: string;
   images: string[];
   reviews: Review[];
+  location?: {
+    lat: number;
+    lng: number;
+  };
 }
 
-// Mock data for venues
-const venues: Venue[] = [
-  {
-    id: "1",
-    name: "Grand Palace Wedding Hall",
-    address: "123 Luxury Ave, Beverly Hills, CA",
-    rating: 4.8,
-    price: "$3,000 - $10,000",
-    image: "/images/image-venue-landing.png",
-    description: "An elegant and spacious wedding hall with crystal chandeliers and marble floors. Perfect for large wedding ceremonies and receptions with a touch of luxury.",
-    capacity: "Up to 500 guests",
-    amenities: ["Bridal Suite", "Catering Services", "Valet Parking", "Sound System", "Lighting", "Dance Floor", "Outdoor Area"],
-    contactPhone: "+1 (555) 123-4567",
-    contactEmail: "info@grandpalaceweddings.com",
-    website: "https://www.grandpalaceweddings.com",
-    googleMapsUrl: "https://maps.google.com/?q=Grand+Palace+Wedding+Hall",
-    images: [
-      "/images/image-venue-landing.png",
-      "/images/zaffaf-landing.png",
-      "/images/hero-image-zaffaf.png",
-      "/images/service-zeffaf.jpeg",
-    ],
-    reviews: [
-      {
-        id: "r1",
-        user: "Sarah & Michael",
-        date: "June 15, 2023",
-        rating: 5,
-        comment: "We had our dream wedding at Grand Palace! The staff was incredibly helpful and the venue looked stunning."
-      },
-      {
-        id: "r2",
-        user: "Jennifer & David",
-        date: "April 22, 2023",
-        rating: 4,
-        comment: "Beautiful venue with great amenities. The only issue was parking for some of our guests."
-      },
-      {
-        id: "r3",
-        user: "Amanda & Robert",
-        date: "August 5, 2023",
-        rating: 5,
-        comment: "Perfect in every way! Our guests couldn't stop talking about how beautiful the venue was."
+// Fetch venue data from Google Places API
+async function getVenueDetails(id: string): Promise<Venue | null> {
+  try {
+    const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+    const BASE_URL = 'https://maps.googleapis.com/maps/api/place';
+    
+    // Get place details
+    const detailsResponse = await axios.get(`${BASE_URL}/details/json`, {
+      params: {
+        place_id: id,
+        key: API_KEY,
+        language: 'fr',
+        fields: 'name,formatted_address,formatted_phone_number,international_phone_number,website,rating,user_ratings_total,reviews,photos,opening_hours,geometry,price_level'
       }
-    ]
-  },
-  {
-    id: "2",
-    name: "Seaside Ceremony Resort",
-    address: "456 Ocean Dr, Malibu, CA",
-    rating: 4.7,
-    price: "$5,000 - $15,000",
-    image: "/images/zaffaf-landing.png",
-    description: "A breathtaking beachfront venue with panoramic ocean views. Ideal for couples dreaming of a romantic seaside wedding ceremony and reception.",
-    capacity: "Up to 200 guests",
-    amenities: ["Beach Access", "Outdoor Ceremony Space", "Indoor Reception Hall", "Catering", "Bar Service", "Accommodation", "Photography Spots"],
-    contactPhone: "+1 (555) 987-6543",
-    contactEmail: "bookings@seasideceremony.com",
-    website: "https://www.seasideceremony.com",
-    googleMapsUrl: "https://maps.google.com/?q=Seaside+Ceremony+Resort+Malibu",
-    images: [
-      "/images/zaffaf-landing.png",
-      "/images/hero-image-zaffaf.png",
-      "/images/image-venue-landing.png",
-      "/images/service-zeffaf.jpeg",
-    ],
-    reviews: [
-      {
-        id: "r1",
-        user: "Emily & Jason",
-        date: "July 8, 2023",
-        rating: 5,
-        comment: "Our beach wedding was absolutely magical! The sunset ceremony was everything we dreamed of."
-      },
-      {
-        id: "r2",
-        user: "Melissa & Brian",
-        date: "May 14, 2023",
-        rating: 4,
-        comment: "Beautiful location but the wind was a bit challenging. Still, the staff handled everything professionally."
+    });
+    
+    const placeDetails = detailsResponse.data.result;
+    
+    if (!placeDetails) {
+      return null;
+    }
+    
+    // Process photos to get URLs
+    const images = placeDetails.photos 
+      ? placeDetails.photos.slice(0, 4).map((photo: any) => 
+          `${BASE_URL}/photo?maxwidth=1200&photoreference=${photo.photo_reference}&key=${API_KEY}`)
+      : ['/images/image-venue-landing.png', '/images/zaffaf-landing.png', '/images/hero-image-zaffaf.png', '/images/service-zeffaf.jpeg'];
+
+    // Process reviews
+    const reviews = placeDetails.reviews 
+      ? placeDetails.reviews.map((review: any) => ({
+          id: `r${Math.random().toString(36).substr(2, 9)}`,
+          user: review.author_name,
+          date: new Date(review.time * 1000).toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          rating: review.rating,
+          comment: review.text
+        }))
+      : [];
+
+    // Create venue object with all required fields
+    return {
+      id: id,
+      name: placeDetails.name,
+      address: placeDetails.formatted_address,
+      rating: placeDetails.rating || 4.5,
+      price: placeDetails.price_level 
+        ? '€'.repeat(placeDetails.price_level) + ' - ' + '€'.repeat(placeDetails.price_level + 1)
+        : "€€€ - €€€€",
+      image: images[0],
+      description: "Un lieu de mariage élégant avec un excellent service et des installations modernes pour votre cérémonie et réception.",
+      capacity: "Jusqu'à 300 invités",
+      amenities: ["Espace de cérémonie", "Salle de réception", "Traiteur", "Parking", "Climatisation", "Sonorisation", "Décoration", "Hébergement"],
+      contactPhone: placeDetails.formatted_phone_number || placeDetails.international_phone_number || "+213 00 00 00 00",
+      contactEmail: `contact@${placeDetails.name.toLowerCase().replace(/\s/g, '')}.dz`,
+      website: placeDetails.website || `https://www.${placeDetails.name.toLowerCase().replace(/\s/g, '')}.dz`,
+      googleMapsUrl: `https://maps.google.com/?q=${placeDetails.name}`,
+      images: images,
+      reviews: reviews,
+      location: {
+        lat: placeDetails.geometry.location.lat,
+        lng: placeDetails.geometry.location.lng
       }
-    ]
-  },
-  {
-    id: "3",
-    name: "Mountain View Gardens",
-    address: "789 Highland Rd, Aspen, CO",
-    rating: 4.9,
-    price: "$4,500 - $12,000",
-    image: "/images/hero-image-zaffaf.png",
-    description: "A picturesque mountain venue surrounded by natural beauty. Features stunning gardens, a rustic barn, and breathtaking views of the mountains.",
-    capacity: "Up to 250 guests",
-    amenities: ["Garden Ceremony Space", "Rustic Barn Reception", "Mountain Views", "Fire Pit", "Outdoor Lighting", "Heaters for Evening", "Parking"],
-    contactPhone: "+1 (555) 456-7890",
-    contactEmail: "events@mountainviewgardens.com",
-    website: "https://www.mountainviewgardens.com",
-    googleMapsUrl: "https://maps.google.com/?q=Mountain+View+Gardens+Aspen",
-    images: [
-      "/images/hero-image-zaffaf.png",
-      "/images/image-venue-landing.png",
-      "/images/zaffaf-landing.png",
-      "/images/service-zeffaf.jpeg",
-    ],
-    reviews: [
-      {
-        id: "r1",
-        user: "Lauren & Christopher",
-        date: "September 12, 2023",
-        rating: 5,
-        comment: "The mountain backdrop made our wedding photos absolutely incredible! Highly recommend this venue."
-      },
-      {
-        id: "r2",
-        user: "Jessica & Thomas",
-        date: "August 28, 2023",
-        rating: 5,
-        comment: "Perfect venue for our rustic-themed wedding. The gardens were in full bloom and looked magical."
-      },
-      {
-        id: "r3",
-        user: "Rachel & Daniel",
-        date: "July 3, 2023",
-        rating: 4,
-        comment: "Beautiful location but it gets chilly in the evening, even in summer. Bring extra layers!"
-      }
-    ]
-  },
-  {
-    id: "4",
-    name: "Historic Downtown Chapel",
-    address: "101 Main St, Charleston, SC",
-    rating: 4.6,
-    price: "$2,000 - $7,500",
-    image: "/images/service-zeffaf.jpeg",
-    description: "A charming historic chapel in the heart of downtown. Features beautiful stained glass windows, classic architecture, and a cozy reception hall.",
-    capacity: "Up to 150 guests",
-    amenities: ["Historic Chapel", "Reception Hall", "Bridal Room", "Grand Piano", "Central Location", "Photography Allowed", "Wheelchair Accessible"],
-    contactPhone: "+1 (555) 234-5678",
-    contactEmail: "bookings@historicchapel.com",
-    website: "https://www.historicchapel.com",
-    googleMapsUrl: "https://maps.google.com/?q=Historic+Downtown+Chapel+Charleston",
-    images: [
-      "/images/service-zeffaf.jpeg",
-      "/images/image-venue-landing.png",
-      "/images/zaffaf-landing.png",
-      "/images/hero-image-zaffaf.png",
-    ],
-    reviews: [
-      {
-        id: "r1",
-        user: "Katherine & William",
-        date: "October 5, 2023",
-        rating: 5,
-        comment: "Such a beautiful historic venue with so much character! Perfect for our intimate wedding."
-      },
-      {
-        id: "r2",
-        user: "Elizabeth & James",
-        date: "May 30, 2023",
-        rating: 4,
-        comment: "Lovely chapel but limited parking in the downtown area. Plan accordingly."
-      }
-    ]
+    };
+  } catch (error) {
+    console.error("Error fetching venue details:", error);
+    return null;
   }
-];
-
-interface PageProps {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
+
+// This enables static site generation with dynamic data
+export const revalidate = 3600; // Revalidate every hour
 
 export async function generateStaticParams() {
   // Return an array of params to pre-render
-  return venues.map((venue) => ({
-    id: venue.id,
-  }));
+  // For now, we'll return an empty array as we'll fetch dynamically
+  return [];
 }
 
-export default async function VenueDetailPage({ params, searchParams }: PageProps) {
-  // Await the params since it's now a Promise
-  const resolvedParams = await params;
-  const venue = venues.find(v => v.id === resolvedParams.id);
+interface PageProps {
+  params: { id: string };
+  searchParams: Record<string, string | string[] | undefined>;
+}
+
+export default async function VenueDetailPage({ params }: PageProps) {
+  const venue = await getVenueDetails(params.id);
   
   if (!venue) {
     notFound();
