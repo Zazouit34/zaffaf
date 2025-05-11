@@ -232,7 +232,7 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
       {/* Venue header */}
       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold font-serif">{venue.name}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif">{venue.name}</h1>
           <div className="flex items-center gap-2 mt-2 text-sm">
             <div className="flex items-center">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
@@ -257,34 +257,47 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
       </div>
       
       {/* Gallery */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="md:col-span-2 md:row-span-2 relative aspect-[4/3]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-8">
+        <div className="col-span-1 sm:col-span-2 sm:row-span-2 relative aspect-[4/3]">
           <Image 
             src={venue.images[0]} 
             alt={venue.name}
             fill
             className="object-cover rounded-lg"
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+            priority
           />
         </div>
         {venue.images.slice(1, 4).map((image, i) => (
-          <div key={i} className="relative aspect-[4/3]">
+          <div key={i} className="hidden sm:block relative aspect-[4/3]">
             <Image 
               src={image} 
               alt={`${venue.name} - Image ${i+2}`}
               fill
               className="object-cover rounded-lg"
+              sizes="(max-width: 768px) 50vw, 25vw"
             />
           </div>
         ))}
+        
+        {/* Mobile image carousel indicator */}
+        <div className="flex justify-center mt-2 gap-1 sm:hidden">
+          {venue.images.slice(0, 4).map((_, i) => (
+            <div 
+              key={i} 
+              className={`h-1.5 rounded-full ${i === 0 ? 'w-4 bg-primary' : 'w-1.5 bg-gray-300'}`}
+            />
+          ))}
+        </div>
       </div>
       
       {/* Content tabs */}
       <Tabs defaultValue="overview" className="mb-10">
-        <TabsList className="mb-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="amenities">Amenities</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          <TabsTrigger value="contact">Contact</TabsTrigger>
+        <TabsList className="mb-6 w-full overflow-x-auto flex-nowrap justify-start sm:justify-center">
+          <TabsTrigger value="overview" className="px-3 sm:px-4 py-2 text-sm">Overview</TabsTrigger>
+          <TabsTrigger value="amenities" className="px-3 sm:px-4 py-2 text-sm">Amenities</TabsTrigger>
+          <TabsTrigger value="reviews" className="px-3 sm:px-4 py-2 text-sm">Reviews</TabsTrigger>
+          <TabsTrigger value="contact" className="px-3 sm:px-4 py-2 text-sm">Contact</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview">
@@ -307,16 +320,16 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
             </div>
             
             <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Book this venue</CardTitle>
+              <Card className="sticky top-4">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Book this venue</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="h-5 w-5" />
+                    <Calendar className="h-5 w-5 text-primary" />
                     <span>Check availability</span>
                   </div>
-                  <Button className="w-full">Request Information</Button>
+                  <Button className="w-full text-base py-5 sm:py-2">Request Information</Button>
                 </CardContent>
               </Card>
             </div>
@@ -325,11 +338,11 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
         
         <TabsContent value="amenities">
           <h2 className="text-2xl font-bold font-serif mb-6">Amenities</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {venue.amenities.map((amenity, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-500" />
-                <span>{amenity}</span>
+              <div key={i} className="flex items-center gap-2 p-2 bg-muted/30 rounded-md sm:bg-transparent sm:p-0">
+                <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                <span className="text-sm sm:text-base">{amenity}</span>
               </div>
             ))}
           </div>
@@ -434,6 +447,15 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Fixed bottom action bar on mobile */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex gap-2 z-50 sm:hidden">
+        <Button variant="outline" className="flex-1 flex items-center justify-center gap-2">
+          <Heart className="h-4 w-4" />
+          <span>Save</span>
+        </Button>
+        <Button className="flex-1">Contact Venue</Button>
+      </div>
     </AppLayout>
   );
 } 

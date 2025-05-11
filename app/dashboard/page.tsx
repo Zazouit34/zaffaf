@@ -124,7 +124,9 @@ export default function DashboardPage() {
             <p className="text-muted-foreground mb-4">
               Vous êtes maintenant connecté à votre compte. Commencez à explorer les lieux de mariage disponibles.
             </p>
-            <Button className="w-full">Découvrir les lieux</Button>
+            <Link href="/venues" className="w-full">
+              <Button className="w-full">Découvrir les lieux</Button>
+            </Link>
           </div>
           
           <div className="bg-card rounded-lg shadow p-6">
