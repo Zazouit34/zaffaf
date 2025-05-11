@@ -19,20 +19,25 @@ export default function AboutPage() {
             
             <h2 className="text-2xl font-semibold mt-10 mb-4">Notre Histoire</h2>
             <p className="text-gray-700 mb-6">
-              Fondée en 2023, Zaffaf est née d'une vision simple : rendre accessible la beauté et l'élégance à tous ceux qui célèbrent l'amour et la vie. Notre équipe passionnée travaille sans relâche pour vous offrir une sélection des meilleurs lieux à travers le pays.
+              Fondée en 2025, Zaffaf est née d'une vision simple : faciliter la recherche de lieux parfaits pour vos événements spéciaux. Notre plateforme est conçue pour vous aider à découvrir des lieux exceptionnels pour célébrer vos moments importants.
             </p>
             
             <h2 className="text-2xl font-semibold mt-10 mb-4">Nos Valeurs</h2>
             <ul className="list-disc pl-6 mb-6 text-gray-700">
-              <li className="mb-2"><span className="font-semibold">Excellence</span> - Nous ne proposons que des lieux qui répondent à nos standards élevés de qualité.</li>
-              <li className="mb-2"><span className="font-semibold">Transparence</span> - Des informations claires et honnêtes sur chaque lieu et service.</li>
-              <li className="mb-2"><span className="font-semibold">Personnalisation</span> - Chaque événement est unique, et nous le comprenons.</li>
-              <li><span className="font-semibold">Service</span> - Un accompagnement attentif du début à la fin de votre projet.</li>
+              <li className="mb-2"><span className="font-semibold">Simplicité</span> - Une plateforme intuitive pour faciliter votre recherche.</li>
+              <li className="mb-2"><span className="font-semibold">Transparence</span> - Des informations claires et accessibles sur chaque lieu.</li>
+              <li className="mb-2"><span className="font-semibold">Innovation</span> - Une amélioration continue de nos fonctionnalités pour mieux vous servir.</li>
+              <li><span className="font-semibold">Utilité</span> - Un service qui répond réellement à vos besoins.</li>
             </ul>
+            
+            <h2 className="text-2xl font-semibold mt-10 mb-4">Notre Vision</h2>
+            <p className="text-gray-700 mb-6">
+              Zaffaf est actuellement une plateforme de découverte de lieux. À l'avenir, nous prévoyons d'enrichir notre offre avec davantage de fonctionnalités et de services, et de permettre aux propriétaires de lieux de créer leurs propres comptes pour présenter leurs espaces directement aux utilisateurs.
+            </p>
             
             <h2 className="text-2xl font-semibold mt-10 mb-4">Notre Équipe</h2>
             <p className="text-gray-700 mb-6">
-              Derrière Zaffaf se trouve une équipe diversifiée d'experts en événementiel, de passionnés de technologie et de créatifs, tous unis par la même passion : créer des souvenirs inoubliables pour nos clients.
+              Zaffaf a été créée par une petite équipe passionnée par la technologie et l'organisation d'événements. Notre objectif est de développer une plateforme qui simplifie réellement la vie des utilisateurs dans leur recherche du lieu idéal pour leurs célébrations importantes.
             </p>
             
             <div className="bg-gray-50 p-6 rounded-lg mt-10">
