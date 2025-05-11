@@ -46,31 +46,33 @@ export function VenueCard({
   return (
     <Link href={`/venues/${id}`} className="block">
       <Card className="overflow-hidden h-full transition-all hover:shadow-lg">
-        <div className="relative aspect-[4/3] w-full">
-          <Image
-            src={image || "/images/venue-placeholder.jpg"}
-            alt={name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full"
-            onClick={handleFavoriteClick}
-          >
-            <Heart
-              className={`h-5 w-5 ${favorite ? "fill-red-500 text-red-500" : "text-gray-500"}`}
+        <div className="p-3 pt-3">
+          <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden">
+            <Image
+              src={image || "/images/venue-placeholder.jpg"}
+              alt={name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
-            <span className="sr-only">Add to favorites</span>
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-3 right-3 bg-white/80 hover:bg-white rounded-full shadow-sm"
+              onClick={handleFavoriteClick}
+            >
+              <Heart
+                className={`h-5 w-5 ${favorite ? "fill-red-500 text-red-500" : "text-gray-500"}`}
+              />
+              <span className="sr-only">Add to favorites</span>
+            </Button>
+          </div>
         </div>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <CardTitle className="text-lg">{name}</CardTitle>
             <div className="flex items-center gap-1 text-sm">
-              <span>★</span>
+              <span className="text-yellow-500">★</span>
               <span>{rating.toFixed(1)}</span>
             </div>
           </div>
