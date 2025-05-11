@@ -3,7 +3,77 @@ import axios from 'axios';
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 const BASE_URL = 'https://maps.googleapis.com/maps/api/place';
 
-export async function searchWeddingVenues(city) {
+interface City {
+  id: string;
+  name: string;
+}
+
+interface Review {
+  id: string;
+  user: string;
+  date: string;
+  rating: number;
+  comment: string;
+}
+
+interface Venue {
+  id: string;
+  name: string;
+  address: string;
+  rating: number;
+  price: string;
+  image: string;
+  description: string;
+  capacity: string;
+  amenities: string[];
+  contactPhone: string;
+  contactEmail: string;
+  website: string;
+  googleMapsUrl: string;
+  images: string[];
+  reviews: Review[];
+  location: {
+    lat: number;
+    lng: number;
+  };
+}
+
+interface PlacePhoto {
+  photo_reference: string;
+  height: number;
+  width: number;
+  html_attributions: string[];
+}
+
+interface PlaceReview {
+  author_name: string;
+  rating: number;
+  text: string;
+  time: number;
+}
+
+interface PlaceResult {
+  place_id: string;
+  name: string;
+  formatted_address: string;
+  formatted_phone_number?: string;
+  international_phone_number?: string;
+  website?: string;
+  rating?: number;
+  user_ratings_total?: number;
+  reviews?: PlaceReview[];
+  photos?: PlacePhoto[];
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    }
+  };
+  price_level?: number;
+  business_status?: string;
+}
+
+export async function searchWeddingVenues(city: string): Promise<Venue[]> {
   try {
     // Search for wedding venues in the specified city
     const searchResponse = await axios.get(`${BASE_URL}/textsearch/json`, {
@@ -14,8 +84,8 @@ export async function searchWeddingVenues(city) {
       }
     });
 
-    const venues = [];
-    const results = searchResponse.data.results;
+    const venues: Venue[] = [];
+    const results = searchResponse.data.results as PlaceResult[];
 
     // For each result, get detailed information
     for (const result of results) {
@@ -29,7 +99,7 @@ export async function searchWeddingVenues(city) {
         }
       });
 
-      const placeDetails = detailsResponse.data.result;
+      const placeDetails = detailsResponse.data.result as PlaceResult;
       
       // Process photos to get URLs
       const images = placeDetails.photos 
@@ -87,7 +157,7 @@ export async function searchWeddingVenues(city) {
   }
 }
 
-export async function getCities() {
+export async function getCities(): Promise<City[]> {
   return [
     { id: "bordj-bouarreridj", name: "Bordj Bou Arreridj" },
     { id: "algiers", name: "Alger" },

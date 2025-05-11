@@ -125,12 +125,14 @@ export async function generateStaticParams() {
 }
 
 interface PageProps {
-  params: { id: string };
-  searchParams: Record<string, string | string[] | undefined>;
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function VenueDetailPage({ params }: PageProps) {
-  const venue = await getVenueDetails(params.id);
+export default async function VenueDetailPage({ params, searchParams }: PageProps) {
+  // Await the params since it's now a Promise
+  const resolvedParams = await params;
+  const venue = await getVenueDetails(resolvedParams.id);
   
   if (!venue) {
     notFound();

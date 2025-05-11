@@ -1,5 +1,3 @@
-"use client";
-
 import { searchWeddingVenues, getCities } from '@/app/services/googlePlacesService';
 import { VenueCard } from "@/components/venue-card";
 import { AppLayout } from "@/components/app-layout";
@@ -9,9 +7,14 @@ import VenuesSkeleton from '@/components/venues-skeleton';
 // This enables static site generation with dynamic data
 export const revalidate = 3600; // Revalidate every hour
 
-export default async function VenuesPage({ searchParams }: { searchParams: { city?: string } }) {
+interface PageProps {
+  searchParams: Promise<{ city?: string }>;
+}
+
+export default async function VenuesPage({ searchParams }: PageProps) {
   const cities = await getCities();
-  const selectedCity = searchParams.city || 'algiers';
+  const resolvedSearchParams = await searchParams;
+  const selectedCity = resolvedSearchParams.city || 'algiers';
   
   return (
     <AppLayout requireAuth={true}>
