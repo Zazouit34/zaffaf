@@ -51,7 +51,7 @@ export function VenueCard({
         <div className="p-3 pt-3">
           <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden">
             <Image
-              src={image || "/images/venue-placeholder.jpg"}
+              src={image || "/images/image-venue-landing.png"}
               alt={name}
               fill
               className="object-cover"
