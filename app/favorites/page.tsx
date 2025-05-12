@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/app-layout';
-import { FavoriteVenue, getUserFavorites } from '@/lib/favorites-service';
+import { FavoriteVenue, getUserFavorites, onFavoriteChange } from '@/lib/favorites-service';
 import { VenueCard } from '@/components/venue-card';
 import { toast } from 'sonner';
 import { Heart } from 'lucide-react';
@@ -11,21 +11,39 @@ export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<FavoriteVenue[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadFavorites() {
-      try {
-        setLoading(true);
-        const userFavorites = await getUserFavorites();
-        setFavorites(userFavorites);
-      } catch (error) {
-        console.error('Error loading favorites:', error);
-        toast.error('Erreur lors du chargement des favoris');
-      } finally {
-        setLoading(false);
-      }
+  const loadFavorites = async () => {
+    try {
+      setLoading(true);
+      const userFavorites = await getUserFavorites();
+      setFavorites(userFavorites);
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+      toast.error('Erreur lors du chargement des favoris');
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     loadFavorites();
+
+    // Listen for changes to favorites
+    const unsubscribe = onFavoriteChange((venueId, isFavorite) => {
+      // If a venue is removed from favorites, remove it from the local state
+      if (!isFavorite) {
+        setFavorites(prevFavorites => 
+          prevFavorites.filter(venue => venue.id !== venueId)
+        );
+      } else {
+        // If a venue is added to favorites while we're on this page, refresh the list
+        loadFavorites();
+      }
+    });
+
+    return () => {
+      // Clean up the event listener when component unmounts
+      unsubscribe();
+    };
   }, []);
 
   return (

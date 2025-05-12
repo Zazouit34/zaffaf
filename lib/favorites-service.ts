@@ -4,6 +4,9 @@ import { toast } from 'sonner';
 
 const FAVORITES_COLLECTION = 'favorites';
 
+// Create a custom event for favorite changes
+const FAVORITE_CHANGE_EVENT = 'favorite-change';
+
 export interface FavoriteVenue {
   id: string;
   name: string;
@@ -15,6 +18,25 @@ export interface FavoriteVenue {
   userId: string;
   createdAt: number;
 }
+
+// Custom event dispatcher for favorite changes
+export const dispatchFavoriteChangeEvent = (venueId: string, isFavorite: boolean) => {
+  const event = new CustomEvent(FAVORITE_CHANGE_EVENT, {
+    detail: { venueId, isFavorite }
+  });
+  window.dispatchEvent(event);
+};
+
+// Listen for favorite changes
+export const onFavoriteChange = (callback: (venueId: string, isFavorite: boolean) => void) => {
+  const handler = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    callback(customEvent.detail.venueId, customEvent.detail.isFavorite);
+  };
+  
+  window.addEventListener(FAVORITE_CHANGE_EVENT, handler);
+  return () => window.removeEventListener(FAVORITE_CHANGE_EVENT, handler);
+};
 
 export const addToFavorites = async (venue: Omit<FavoriteVenue, 'userId' | 'createdAt'>) => {
   try {
@@ -32,6 +54,10 @@ export const addToFavorites = async (venue: Omit<FavoriteVenue, 'userId' | 'crea
     });
 
     toast.success(`La salle "${venue.name}" a été sauvegardée`);
+    
+    // Dispatch event for UI updates
+    dispatchFavoriteChangeEvent(venue.id, true);
+    
     return true;
   } catch (error) {
     console.error('Error adding to favorites:', error);
@@ -52,6 +78,10 @@ export const removeFromFavorites = async (venueId: string) => {
     await deleteDoc(favoriteRef);
     
     toast.success('Supprimé des favoris');
+    
+    // Dispatch event for UI updates
+    dispatchFavoriteChangeEvent(venueId, false);
+    
     return true;
   } catch (error) {
     console.error('Error removing from favorites:', error);
