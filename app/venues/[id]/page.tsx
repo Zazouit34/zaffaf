@@ -33,20 +33,44 @@ function getLanguageName(code: string): string {
   return languages[code] || code;
 }
 
-export default function VenueDetailPage({ params }: { params: { id: string } }) {
+// Define the page props interface correctly according to Next.js App Router
+interface PageProps {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default function VenueDetailPage({ params }: PageProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [venue, setVenue] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAddingFavorite, setIsAddingFavorite] = useState(false);
+  const [venueId, setVenueId] = useState<string | null>(null);
 
+  // Resolve the params promise to get the actual id
+  useEffect(() => {
+    async function resolveParams() {
+      try {
+        const resolvedParams = await params;
+        setVenueId(resolvedParams.id);
+      } catch (error) {
+        console.error('Error resolving params:', error);
+      }
+    }
+    
+    resolveParams();
+  }, [params]);
+
+  // Fetch venue details once we have the venueId
   useEffect(() => {
     async function fetchVenue() {
+      if (!venueId) return;
+
       try {
         setLoading(true);
         // Fetch venue details
-        const response = await fetch(`/api/venues/${params.id}`);
+        const response = await fetch(`/api/venues/${venueId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch venue');
         }
@@ -54,7 +78,7 @@ export default function VenueDetailPage({ params }: { params: { id: string } }) 
         
         // Check if this venue is in favorites
         if (user) {
-          const favoriteStatus = await checkIsFavorite(params.id);
+          const favoriteStatus = await checkIsFavorite(venueId);
           setIsFavorite(favoriteStatus);
         }
         
@@ -96,26 +120,28 @@ export default function VenueDetailPage({ params }: { params: { id: string } }) 
     }
 
     fetchVenue();
-  }, [params.id, user]);
+  }, [venueId, user]);
 
   const handleFavoriteToggle = async () => {
     if (!user) {
       router.push('/login');
       return;
     }
+    
+    if (!venueId) return;
 
     setIsAddingFavorite(true);
     
     try {
       if (isFavorite) {
         // Remove from favorites
-        const success = await removeFromFavorites(params.id);
+        const success = await removeFromFavorites(venueId);
         if (success) setIsFavorite(false);
       } else {
         // Add to favorites
         if (venue) {
           const success = await addToFavorites({
-            id: params.id,
+            id: venueId,
             name: venue.name,
             address: venue.address,
             rating: venue.rating,
