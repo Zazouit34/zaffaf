@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import pLimit from 'p-limit';
+import { cities } from '@/app/data/cities';
 
 interface VenuePhoto {
   photo_reference: string;
@@ -22,23 +23,6 @@ export interface Venue {
 
 // Placeholder image to use if no photo is available
 const PLACEHOLDER_IMAGE = '/images/image-venue-landing.png';
-
-// List of major Algerian cities to search for venues
-export const cities = [
-  "Alger",
-  "Oran",
-  "Setif",
-  "Tlemcen",
-  "Annaba",
-  "Batna",
-  "Constantine",
-  "Blida",
-  "Bejaia",
-  "Tizi Ouzou",
-  "Skikda",
-  "Souk Ahras",
-  "Bordj Bouarreridj",
-];
 
 // Different search terms to find diverse venue types
 const searchTerms = [

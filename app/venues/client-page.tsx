@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { VenueCard } from "@/components/venue-card";
 import { AppLayout } from "@/components/app-layout";
-import { Venue, cities as CITY_ORDER } from "@/app/actions/venues";
+import { Venue } from "@/app/actions/venues";
+import { cities as CITY_ORDER } from "@/app/data/cities";
 import { CityFilter } from "@/components/city-filter";
 import {
   Pagination,
