@@ -21,14 +21,16 @@ export interface Venue {
 
 // List of major Algerian cities to search for venues
 const cities = [
-  "Bordj Bouarreridj",
   "Alger",
   "Oran",
   "Setif",
+   "Bordj Bouarreridj",
   "Tlemcen",
   "Annaba",
   "Batna",
-  "Constantine"
+  "Constantine",
+  "Blida",
+  
 ];
 
 export async function fetchVenues(): Promise<Venue[]> {
