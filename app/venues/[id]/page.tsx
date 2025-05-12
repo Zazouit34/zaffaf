@@ -1,6 +1,7 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Star, MapPin, Phone, Globe, Calendar, Check, Heart, ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,17 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/components/app-layout";
 import { MobileImageCarousel } from "@/components/mobile-image-carousel";
 import { VenueContactDialog } from "@/components/venue-contact-dialog";
-import { fetchVenueDetails } from "@/app/actions/venues";
-
-// Define the params type according to Next.js expectations in deployed environments
-interface PageProps {
-  params: Promise<{ id: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}
-
-// Make this a dynamic page since we're fetching data from an external API
-export const dynamic = 'force-dynamic';
-export const dynamicParams = true;
+import { useEffect, useState } from "react";
+import { addToFavorites, removeFromFavorites, checkIsFavorite } from "@/lib/favorites-service";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 
 // Language name mapping helper
 function getLanguageName(code: string): string {
@@ -39,54 +33,137 @@ function getLanguageName(code: string): string {
   return languages[code] || code;
 }
 
-export default async function VenueDetailPage({ params }: PageProps) {
-  // Await the params since it's a Promise in the deployed environment
-  const resolvedParams = await params;
-  
-  // Fetch the venue details using the ID from params
-  const venue = await fetchVenueDetails(resolvedParams.id);
-  
-  if (!venue) {
-    notFound();
-  }
+export default function VenueDetailPage({ params }: { params: { id: string } }) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [venue, setVenue] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isAddingFavorite, setIsAddingFavorite] = useState(false);
 
-  // Extract city from address if not already set
-  let venueCity = venue.city;
-  if (!venueCity && venue.address) {
-    // Try to extract the city from the address
-    // Addresses in Algeria often end with the city name or have it after a comma
-    const addressParts = venue.address.split(',').map(part => part.trim());
-    
-    // City is usually either the last part or second-to-last part
-    // (sometimes the last part is just "Algeria")
-    if (addressParts.length > 1) {
-      const lastPart = addressParts[addressParts.length - 1];
-      const secondLastPart = addressParts[addressParts.length - 2];
-      
-      // If the last part is "Algeria" or contains a postal code, use the second-to-last part
-      if (lastPart.includes("Algeria") || lastPart.includes("Algérie") || /\d{4,5}/.test(lastPart)) {
-        venueCity = secondLastPart;
-      } else {
-        venueCity = lastPart;
-      }
-      
-      // If the extracted city contains a postal code, clean it up
-      if (venueCity && /\d{4,5}/.test(venueCity)) {
-        venueCity = venueCity.replace(/\d{4,5}/, '').trim();
+  useEffect(() => {
+    async function fetchVenue() {
+      try {
+        setLoading(true);
+        // Fetch venue details
+        const response = await fetch(`/api/venues/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch venue');
+        }
+        const data = await response.json();
+        
+        // Check if this venue is in favorites
+        if (user) {
+          const favoriteStatus = await checkIsFavorite(params.id);
+          setIsFavorite(favoriteStatus);
+        }
+        
+        // Extract city from address if not already set
+        let venueCity = data.city;
+        if (!venueCity && data.address) {
+          // Try to extract the city from the address
+          // Addresses in Algeria often end with the city name or have it after a comma
+          const addressParts = data.address.split(',').map((part: string) => part.trim());
+          
+          // City is usually either the last part or second-to-last part
+          if (addressParts.length > 1) {
+            const lastPart = addressParts[addressParts.length - 1];
+            const secondLastPart = addressParts[addressParts.length - 2];
+            
+            // If the last part is "Algeria" or contains a postal code, use the second-to-last part
+            if (lastPart.includes("Algeria") || lastPart.includes("Algérie") || /\d{4,5}/.test(lastPart)) {
+              venueCity = secondLastPart;
+            } else {
+              venueCity = lastPart;
+            }
+            
+            // If the extracted city contains a postal code, clean it up
+            if (venueCity && /\d{4,5}/.test(venueCity)) {
+              venueCity = venueCity.replace(/\d{4,5}/, '').trim();
+            }
+          }
+        }
+
+        setVenue({
+          ...data,
+          city: venueCity || "Algérie"
+        });
+      } catch (error) {
+        console.error('Error fetching venue:', error);
+      } finally {
+        setLoading(false);
       }
     }
+
+    fetchVenue();
+  }, [params.id, user]);
+
+  const handleFavoriteToggle = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    setIsAddingFavorite(true);
+    
+    try {
+      if (isFavorite) {
+        // Remove from favorites
+        const success = await removeFromFavorites(params.id);
+        if (success) setIsFavorite(false);
+      } else {
+        // Add to favorites
+        if (venue) {
+          const success = await addToFavorites({
+            id: params.id,
+            name: venue.name,
+            address: venue.address,
+            rating: venue.rating,
+            price: venue.price || "Prix sur demande",
+            image: venue.photos && venue.photos.length > 0 
+              ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${venue.photos[0].reference}&key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}`
+              : '/images/image-venue-landing.png',
+            city: venue.city
+          });
+          if (success) setIsFavorite(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    } finally {
+      setIsAddingFavorite(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AppLayout requireAuth={false}>
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </AppLayout>
+    );
   }
 
-  // Ensure isFavorite is set (needed for VenueContactDialog)
-  const venueWithFavorite = {
-    ...venue,
-    isFavorite: venue.isFavorite || false,
-    city: venueCity || "Algérie" // Use extracted city or default to "Algérie"
-  };
+  if (!venue) {
+    return (
+      <AppLayout requireAuth={false}>
+        <div className="text-center py-12">
+          <h2 className="text-xl font-medium text-gray-600">Lieu non trouvé</h2>
+          <p className="text-gray-500 mt-2">
+            Ce lieu de réception n'existe pas ou a été supprimé.
+          </p>
+          <Link href="/venues" className="mt-4 inline-block">
+            <Button>Retour aux lieux</Button>
+          </Link>
+        </div>
+      </AppLayout>
+    );
+  }
 
   // Create image array with fallback
   const images = venue.photos && venue.photos.length > 0 
-    ? venue.photos.slice(0, 4).map(photo => 
+    ? venue.photos.slice(0, 4).map((photo: any) => 
       `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photo.reference}&key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}`
     )
     : ['/images/image-venue-landing.png'];
@@ -106,7 +183,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
   // Determine amenities based on types and location
   const amenities = [
     "Salle de réception",
-    venueCity ? `Situé à ${venueCity}` : "Emplacement stratégique",
+    venue.city ? `Situé à ${venue.city}` : "Emplacement stratégique",
   ];
   
   if (venueTypes.includes("restaurant")) amenities.push("Service de restauration");
@@ -114,8 +191,14 @@ export default async function VenueDetailPage({ params }: PageProps) {
   if (venueTypes.includes("parking")) amenities.push("Parking");
   if (venue.openingHours?.weekdayText) amenities.push("Horaires flexibles");
 
+  // Used for the contact dialog
+  const venueWithFavorite = {
+    ...venue,
+    isFavorite
+  };
+
   return (
-    <AppLayout requireAuth={true}>
+    <AppLayout requireAuth={false}>
       {/* Back button */}
       <Link href="/venues" className="flex items-center gap-2 mb-6 text-sm hover:underline">
         <ArrowLeft className="h-4 w-4" /> Retour aux lieux
@@ -140,9 +223,16 @@ export default async function VenueDetailPage({ params }: PageProps) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
-            <span>Sauvegarder</span>
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={handleFavoriteToggle}
+            disabled={isAddingFavorite}
+          >
+            <Heart 
+              className={`h-4 w-4 ${isFavorite ? "fill-red-500 text-red-500" : ""} ${isAddingFavorite ? "animate-pulse" : ""}`} 
+            />
+            <span>{isFavorite ? "Sauvegardé" : "Sauvegarder"}</span>
           </Button>
           <VenueContactDialog venue={venueWithFavorite}>
             <Button>Contacter</Button>
@@ -169,7 +259,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
               priority
             />
           </div>
-          {images.slice(1).map((image, i) => (
+          {images.slice(1).map((image: string, i: number) => (
             <div key={i} className="relative aspect-[4/3]">
               <Image 
                 src={image} 
@@ -201,11 +291,11 @@ export default async function VenueDetailPage({ params }: PageProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">Localisation</Badge>
-                  <span>{venueCity || "Non spécifié"}</span>
+                  <span>{venue.city || "Non spécifié"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">Fourchette de prix</Badge>
-                  <span>{venue.price}</span>
+                  <span>{venue.price || "Prix sur demande"}</span>
                 </div>
                 {venue.openingHours?.isOpen !== undefined && (
                   <div className="flex items-center gap-2">
@@ -222,7 +312,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
                   <h3 className="text-xl font-bold font-serif mb-3">Horaires d'ouverture</h3>
                   <div className="bg-muted/30 p-4 rounded-md">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {venue.openingHours.weekdayText.map((day, i) => (
+                      {venue.openingHours.weekdayText.map((day: string, i: number) => (
                         <div key={i} className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-primary" />
                           <span className="text-sm">{day}</span>
@@ -277,7 +367,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
           
           <div className="space-y-6">
             {venue.reviews && venue.reviews.length > 0 ? (
-              venue.reviews.map((review, index) => (
+              venue.reviews.map((review: any, index: number) => (
                 <div key={index} className="border-b pb-6">
                   <div className="flex items-start gap-3 mb-2">
                     {review.authorPhoto && (
@@ -322,9 +412,16 @@ export default async function VenueDetailPage({ params }: PageProps) {
 
       {/* Fixed bottom action bar on mobile */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex gap-2 z-50 sm:hidden">
-        <Button variant="outline" className="flex-1 flex items-center justify-center gap-2">
-          <Heart className="h-4 w-4" />
-          <span>Sauvegarder</span>
+        <Button
+          variant="outline"
+          className="flex-1 flex items-center justify-center gap-2"
+          onClick={handleFavoriteToggle}
+          disabled={isAddingFavorite}
+        >
+          <Heart 
+            className={`h-4 w-4 ${isFavorite ? "fill-red-500 text-red-500" : ""} ${isAddingFavorite ? "animate-pulse" : ""}`} 
+          />
+          <span>{isFavorite ? "Sauvegardé" : "Sauvegarder"}</span>
         </Button>
         <VenueContactDialog venue={venueWithFavorite}>
           <Button className="flex-1">Contacter</Button>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { 
   Card, 
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { addToFavorites, removeFromFavorites, checkIsFavorite } from "@/lib/favorites-service";
+import { useAuth } from "@/lib/auth-context";
 
 interface VenueCardProps {
   id: string;
@@ -39,14 +41,57 @@ export function VenueCard({
   isFavorite = false,
   city
 }: VenueCardProps) {
+  const { user } = useAuth();
   const [favorite, setFavorite] = useState(isFavorite);
   const [imgSrc, setImgSrc] = useState(image || PLACEHOLDER_IMAGE);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  useEffect(() => {
+    // Check if this venue is in user's favorites when component mounts
+    const checkFavoriteStatus = async () => {
+      if (user) {
+        const isFav = await checkIsFavorite(id);
+        setFavorite(isFav);
+      }
+    };
+    
+    checkFavoriteStatus();
+  }, [id, user]);
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setFavorite(!favorite);
-    // Ici vous appelleriez généralement une API pour sauvegarder l'état des favoris
+    
+    if (!user) {
+      // You can redirect to login or show a toast
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      if (favorite) {
+        // Remove from favorites
+        const success = await removeFromFavorites(id);
+        if (success) setFavorite(false);
+      } else {
+        // Add to favorites
+        const success = await addToFavorites({
+          id,
+          name,
+          address,
+          rating,
+          price,
+          image: imgSrc,
+          city
+        });
+        if (success) setFavorite(true);
+      }
+    } catch (error) {
+      console.error("Error handling favorite:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle image load error
@@ -74,9 +119,10 @@ export function VenueCard({
               size="icon"
               className="absolute top-3 right-3 bg-white/80 hover:bg-white rounded-full shadow-sm"
               onClick={handleFavoriteClick}
+              disabled={isLoading}
             >
               <Heart
-                className={`h-5 w-5 ${favorite ? "fill-red-500 text-red-500" : "text-gray-500"}`}
+                className={`h-5 w-5 ${favorite ? "fill-red-500 text-red-500" : "text-gray-500"} ${isLoading ? "animate-pulse" : ""}`}
               />
               <span className="sr-only">Ajouter aux favoris</span>
             </Button>
