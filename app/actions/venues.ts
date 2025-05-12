@@ -19,6 +19,7 @@ export interface Venue {
   image: string;
   isFavorite: boolean;
   city?: string;
+  types?: string[];
 }
 
 // Placeholder image to use if no photo is available
@@ -33,41 +34,83 @@ const searchTerms = [
   "hotel mariage"
 ];
 
+// Relevant place types for wedding venues
+const RELEVANT_TYPES = [
+  "banquet_hall",
+  "event_venue",
+  "restaurant",
+  "lodging",
+  "hotel",
+  "establishment",
+  "food",
+  "point_of_interest",
+  "premise",
+  "tourist_attraction",
+  "room",
+  "bar"
+];
+
+// Minimum rating threshold
+const MIN_RATING = 3.5;
+
 // Helper function to delay execution for a specific amount of time
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Helper function to check if a place is relevant based on its types
+const isRelevantVenue = (place: any): boolean => {
+  // Check if it has any relevant types
+  if (!place.types || !Array.isArray(place.types)) {
+    return false;
+  }
+  
+  // Check if any of the place's types match our relevant types
+  return place.types.some((type: string) => RELEVANT_TYPES.includes(type));
+};
+
 // Helper function to transform Google Places results into our venue format
 const transformPlacesToVenues = (places: any[], city: string, apiKey: string): Venue[] => {
-  return places.map((place: any) => {
-    // Get a photo URL if available
-    let photoUrl = PLACEHOLDER_IMAGE;
-    
-    if (place.photos && place.photos.length > 0) {
-      try {
-        const photoReference = place.photos[0].photo_reference;
-        if (photoReference) {
-          photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoReference}&key=${apiKey}`;
+  return places
+    .filter(place => {
+      // Filter by relevant types
+      const hasRelevantType = isRelevantVenue(place);
+      
+      // Filter by minimum rating threshold
+      // If no rating available, we'll still include it (giving benefit of the doubt)
+      const hasGoodRating = !place.rating || place.rating >= MIN_RATING;
+      
+      return hasRelevantType && hasGoodRating;
+    })
+    .map((place: any) => {
+      // Get a photo URL if available
+      let photoUrl = PLACEHOLDER_IMAGE;
+      
+      if (place.photos && place.photos.length > 0) {
+        try {
+          const photoReference = place.photos[0].photo_reference;
+          if (photoReference) {
+            photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoReference}&key=${apiKey}`;
+          }
+        } catch (photoError) {
+          console.warn('Error getting photo for venue:', photoError);
+          photoUrl = PLACEHOLDER_IMAGE;
         }
-      } catch (photoError) {
-        console.warn('Error getting photo for venue:', photoError);
-        photoUrl = PLACEHOLDER_IMAGE;
       }
-    }
-    
-    // Default price range since Google Places doesn't provide pricing
-    const priceRange = "Prix: Sur demande";
-    
-    return {
-      id: place.place_id,
-      name: place.name,
-      address: place.formatted_address,
-      rating: place.rating || 0,
-      price: priceRange,
-      image: photoUrl,
-      isFavorite: false,
-      city: city
-    };
-  });
+      
+      // Default price range since Google Places doesn't provide pricing
+      const priceRange = "Prix: Sur demande";
+      
+      return {
+        id: place.place_id,
+        name: place.name,
+        address: place.formatted_address,
+        rating: place.rating || 0,
+        price: priceRange,
+        image: photoUrl,
+        isFavorite: false,
+        city: city,
+        types: place.types
+      };
+    });
 };
 
 // Function to fetch venues for a specific city and search term with pagination
@@ -96,7 +139,7 @@ async function fetchVenuesWithTerm(city: string, searchTerm: string, apiKey: str
         break;
       }
       
-      // Transform and add venues
+      // Transform and add venues (filtering happens in transformPlacesToVenues)
       const venues = transformPlacesToVenues(response.data.results, city, apiKey);
       allVenues = [...allVenues, ...venues];
       
