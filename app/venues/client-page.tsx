@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { VenueCard } from "@/components/venue-card";
 import { AppLayout } from "@/components/app-layout";
 import { Venue } from "@/app/actions/venues";
@@ -12,58 +12,23 @@ interface VenuesClientPageProps {
 
 export function VenuesClientPage({ venues }: VenuesClientPageProps) {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [filteredVenues, setFilteredVenues] = useState<Venue[]>(venues);
 
-  // Extract unique cities from venues with proper error handling
+  // Extract unique cities from venues
   const cities = useMemo(() => {
-    console.log(`Extracting cities from ${venues.length} venues`);
     const citySet = new Set<string>();
-    
     venues.forEach((venue) => {
-      if (venue.city && venue.city.trim()) {
-        citySet.add(venue.city.trim());
+      if (venue.city) {
+        citySet.add(venue.city);
       }
     });
-    
-    const sortedCities = Array.from(citySet).sort();
-    console.log(`Extracted ${sortedCities.length} unique cities: ${sortedCities.join(', ')}`);
-    return sortedCities;
+    return Array.from(citySet);
   }, [venues]);
 
   // Filter venues by selected city
-  useEffect(() => {
-    if (!selectedCity) {
-      setFilteredVenues(venues);
-      console.log(`Showing all ${venues.length} venues`);
-    } else {
-      console.log(`Filtering for city: ${selectedCity}`);
-      
-      const filtered = venues.filter((venue) => 
-        venue.city && venue.city.toLowerCase() === selectedCity.toLowerCase()
-      );
-      
-      console.log(`Found ${filtered.length} venues in ${selectedCity}`);
-      setFilteredVenues(filtered);
-    }
+  const filteredVenues = useMemo(() => {
+    if (!selectedCity) return venues;
+    return venues.filter((venue) => venue.city === selectedCity);
   }, [venues, selectedCity]);
-
-  // Log for debugging
-  useEffect(() => {
-    if (selectedCity) {
-      console.log(`Filtering for city: ${selectedCity}`);
-      console.log(`Found ${filteredVenues.length} venues in ${selectedCity}`);
-      
-      // Check if any venues don't match the filter
-      const mismatchVenues = filteredVenues.filter(
-        venue => venue.city?.toLowerCase() !== selectedCity.toLowerCase()
-      );
-      
-      if (mismatchVenues.length > 0) {
-        console.warn(`Found ${mismatchVenues.length} venues with wrong city:`, 
-          mismatchVenues.map(v => `${v.name} (${v.city})`));
-      }
-    }
-  }, [selectedCity, filteredVenues]);
 
   return (
     <AppLayout requireAuth={true}>

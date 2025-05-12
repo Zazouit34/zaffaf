@@ -33,30 +33,7 @@ const cities = [
   "Constantine",
   "Blida",
   "Bordj Bouarreridj",
-  "Béjaïa",
-  "Tizi Ouzou",
-  "Tipaza",
-  "Skikda",
-  "Sétif",
-  "Souk Ahras",
 ];
-
-// Limit of results per city to prevent Google API quota issues
-const MAX_RESULTS_PER_CITY = 20;
-
-// Normalize the search results to ensure they match the exact city names in our filter
-function normalizeCity(address: string, searchedCity: string): string {
-  // Check if the address contains any of our city names
-  for (const city of cities) {
-    // If the city is mentioned in the address, prioritize our standardized name
-    if (address.toLowerCase().includes(city.toLowerCase())) {
-      return city;
-    }
-  }
-  
-  // If no direct match, return the city we searched for
-  return searchedCity;
-}
 
 export async function fetchVenues(): Promise<Venue[]> {
   try {
@@ -65,8 +42,6 @@ export async function fetchVenues(): Promise<Venue[]> {
     if (!API_KEY) {
       throw new Error('Google Places API key is not defined');
     }
-    
-    console.log(`Searching for venues in ${cities.length} cities...`);
     
     // Create an array of promises for each city search
     const cityPromises = cities.map(async (city) => {
@@ -80,10 +55,8 @@ export async function fetchVenues(): Promise<Venue[]> {
           return [];
         }
         
-        console.log(`Found ${response.data.results.length} venues for ${city}`);
-        
-        // Transform the API response into our venue format (limit to MAX_RESULTS_PER_CITY)
-        return response.data.results.slice(0, MAX_RESULTS_PER_CITY).map((place: any) => {
+        // Transform the API response into our venue format
+        return response.data.results.map((place: any) => {
           // Get a photo URL if available
           let photoUrl = PLACEHOLDER_IMAGE;
           
@@ -102,9 +75,6 @@ export async function fetchVenues(): Promise<Venue[]> {
           // Default price range since Google Places doesn't provide pricing
           const priceRange = "Prix: Sur demande";
           
-          // Use the normalized city to ensure consistency
-          const normalizedCity = normalizeCity(place.formatted_address, city);
-          
           return {
             id: place.place_id,
             name: place.name,
@@ -113,7 +83,7 @@ export async function fetchVenues(): Promise<Venue[]> {
             price: priceRange,
             image: photoUrl,
             isFavorite: false,
-            city: normalizedCity
+            city: city
           };
         });
       } catch (error) {
@@ -125,21 +95,11 @@ export async function fetchVenues(): Promise<Venue[]> {
     // Wait for all city searches to complete
     const cityResults = await Promise.all(cityPromises);
     
-    // Flatten the array of arrays into a single array of venues and filter out duplicates
+    // Flatten the array of arrays into a single array of venues
     const allVenues = cityResults.flat();
     
-    console.log(`Total venues before deduplication: ${allVenues.length}`);
-    
-    // Filter out duplicate venues based on place_id
-    const uniqueVenues = allVenues.filter((venue, index, self) => 
-      index === self.findIndex((v) => v.id === venue.id)
-    );
-    
-    console.log(`Total unique venues: ${uniqueVenues.length}`);
-    console.log(`Cities represented: ${Array.from(new Set(uniqueVenues.map(v => v.city))).join(', ')}`);
-    
-    // Return all unique venues
-    return uniqueVenues;
+    // Return all venues without limiting
+    return allVenues;
   } catch (error) {
     console.error('Error fetching venues:', error);
     return [];
