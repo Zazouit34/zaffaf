@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Star, MapPin, Phone, Globe, Calendar, Check, Heart, ArrowLeft } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Calendar, Check, Heart, ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,221 +9,53 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/components/app-layout";
 import { MobileImageCarousel } from "@/components/mobile-image-carousel";
 import { VenueContactDialog } from "@/components/venue-contact-dialog";
-
-// Type definitions
-interface Review {
-  id: string;
-  user: string;
-  date: string;
-  rating: number;
-  comment: string;
-}
-
-interface Venue {
-  id: string;
-  name: string;
-  address: string;
-  rating: number;
-  price: string;
-  image: string;
-  description: string;
-  capacity: string;
-  amenities: string[];
-  contactPhone: string;
-  contactEmail: string;
-  website: string;
-  googleMapsUrl: string;
-  images: string[];
-  reviews: Review[];
-}
-
-// Mock data for venues
-const venues: Venue[] = [
-  {
-    id: "1",
-    name: "Grand Palace Wedding Hall",
-    address: "123 Luxury Ave, Beverly Hills, CA",
-    rating: 4.8,
-    price: "$3,000 - $10,000",
-    image: "/images/image-venue-landing.png",
-    description: "An elegant and spacious wedding hall with crystal chandeliers and marble floors. Perfect for large wedding ceremonies and receptions with a touch of luxury.",
-    capacity: "Up to 500 guests",
-    amenities: ["Bridal Suite", "Catering Services", "Valet Parking", "Sound System", "Lighting", "Dance Floor", "Outdoor Area"],
-    contactPhone: "+1 (555) 123-4567",
-    contactEmail: "info@grandpalaceweddings.com",
-    website: "https://www.grandpalaceweddings.com",
-    googleMapsUrl: "https://maps.google.com/?q=Grand+Palace+Wedding+Hall",
-    images: [
-      "/images/image-venue-landing.png",
-      "/images/zaffaf-landing.png",
-      "/images/hero-image-zaffaf.png",
-      "/images/service-zeffaf.jpeg",
-    ],
-    reviews: [
-      {
-        id: "r1",
-        user: "Sarah & Michael",
-        date: "June 15, 2023",
-        rating: 5,
-        comment: "We had our dream wedding at Grand Palace! The staff was incredibly helpful and the venue looked stunning."
-      },
-      {
-        id: "r2",
-        user: "Jennifer & David",
-        date: "April 22, 2023",
-        rating: 4,
-        comment: "Beautiful venue with great amenities. The only issue was parking for some of our guests."
-      },
-      {
-        id: "r3",
-        user: "Amanda & Robert",
-        date: "August 5, 2023",
-        rating: 5,
-        comment: "Perfect in every way! Our guests couldn't stop talking about how beautiful the venue was."
-      }
-    ]
-  },
-  {
-    id: "2",
-    name: "Seaside Ceremony Resort",
-    address: "456 Ocean Dr, Malibu, CA",
-    rating: 4.7,
-    price: "$5,000 - $15,000",
-    image: "/images/zaffaf-landing.png",
-    description: "A breathtaking beachfront venue with panoramic ocean views. Ideal for couples dreaming of a romantic seaside wedding ceremony and reception.",
-    capacity: "Up to 200 guests",
-    amenities: ["Beach Access", "Outdoor Ceremony Space", "Indoor Reception Hall", "Catering", "Bar Service", "Accommodation", "Photography Spots"],
-    contactPhone: "+1 (555) 987-6543",
-    contactEmail: "bookings@seasideceremony.com",
-    website: "https://www.seasideceremony.com",
-    googleMapsUrl: "https://maps.google.com/?q=Seaside+Ceremony+Resort+Malibu",
-    images: [
-      "/images/zaffaf-landing.png",
-      "/images/hero-image-zaffaf.png",
-      "/images/image-venue-landing.png",
-      "/images/service-zeffaf.jpeg",
-    ],
-    reviews: [
-      {
-        id: "r1",
-        user: "Emily & Jason",
-        date: "July 8, 2023",
-        rating: 5,
-        comment: "Our beach wedding was absolutely magical! The sunset ceremony was everything we dreamed of."
-      },
-      {
-        id: "r2",
-        user: "Melissa & Brian",
-        date: "May 14, 2023",
-        rating: 4,
-        comment: "Beautiful location but the wind was a bit challenging. Still, the staff handled everything professionally."
-      }
-    ]
-  },
-  {
-    id: "3",
-    name: "Mountain View Gardens",
-    address: "789 Highland Rd, Aspen, CO",
-    rating: 4.9,
-    price: "$4,500 - $12,000",
-    image: "/images/hero-image-zaffaf.png",
-    description: "A picturesque mountain venue surrounded by natural beauty. Features stunning gardens, a rustic barn, and breathtaking views of the mountains.",
-    capacity: "Up to 250 guests",
-    amenities: ["Garden Ceremony Space", "Rustic Barn Reception", "Mountain Views", "Fire Pit", "Outdoor Lighting", "Heaters for Evening", "Parking"],
-    contactPhone: "+1 (555) 456-7890",
-    contactEmail: "events@mountainviewgardens.com",
-    website: "https://www.mountainviewgardens.com",
-    googleMapsUrl: "https://maps.google.com/?q=Mountain+View+Gardens+Aspen",
-    images: [
-      "/images/hero-image-zaffaf.png",
-      "/images/image-venue-landing.png",
-      "/images/zaffaf-landing.png",
-      "/images/service-zeffaf.jpeg",
-    ],
-    reviews: [
-      {
-        id: "r1",
-        user: "Lauren & Christopher",
-        date: "September 12, 2023",
-        rating: 5,
-        comment: "The mountain backdrop made our wedding photos absolutely incredible! Highly recommend this venue."
-      },
-      {
-        id: "r2",
-        user: "Jessica & Thomas",
-        date: "August 28, 2023",
-        rating: 5,
-        comment: "Perfect venue for our rustic-themed wedding. The gardens were in full bloom and looked magical."
-      },
-      {
-        id: "r3",
-        user: "Rachel & Daniel",
-        date: "July 3, 2023",
-        rating: 4,
-        comment: "Beautiful location but it gets chilly in the evening, even in summer. Bring extra layers!"
-      }
-    ]
-  },
-  {
-    id: "4",
-    name: "Historic Downtown Chapel",
-    address: "101 Main St, Charleston, SC",
-    rating: 4.6,
-    price: "$2,000 - $7,500",
-    image: "/images/service-zeffaf.jpeg",
-    description: "A charming historic chapel in the heart of downtown. Features beautiful stained glass windows, classic architecture, and a cozy reception hall.",
-    capacity: "Up to 150 guests",
-    amenities: ["Historic Chapel", "Reception Hall", "Bridal Room", "Grand Piano", "Central Location", "Photography Allowed", "Wheelchair Accessible"],
-    contactPhone: "+1 (555) 234-5678",
-    contactEmail: "bookings@historicchapel.com",
-    website: "https://www.historicchapel.com",
-    googleMapsUrl: "https://maps.google.com/?q=Historic+Downtown+Chapel+Charleston",
-    images: [
-      "/images/service-zeffaf.jpeg",
-      "/images/image-venue-landing.png",
-      "/images/zaffaf-landing.png",
-      "/images/hero-image-zaffaf.png",
-    ],
-    reviews: [
-      {
-        id: "r1",
-        user: "Katherine & William",
-        date: "October 5, 2023",
-        rating: 5,
-        comment: "Such a beautiful historic venue with so much character! Perfect for our intimate wedding."
-      },
-      {
-        id: "r2",
-        user: "Elizabeth & James",
-        date: "May 30, 2023",
-        rating: 4,
-        comment: "Lovely chapel but limited parking in the downtown area. Plan accordingly."
-      }
-    ]
-  }
-];
+import { Venue, fetchVenueDetails } from "@/app/actions/venues";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  params: { id: string };
 }
 
-export async function generateStaticParams() {
-  // Return an array of params to pre-render
-  return venues.map((venue) => ({
-    id: venue.id,
-  }));
-}
+// Make this a dynamic page since we're fetching data from an external API
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
 
-export default async function VenueDetailPage({ params, searchParams }: PageProps) {
-  // Await the params since it's now a Promise
-  const resolvedParams = await params;
-  const venue = venues.find(v => v.id === resolvedParams.id);
+export default async function VenueDetailPage({ params }: PageProps) {
+  const venue = await fetchVenueDetails(params.id);
   
   if (!venue) {
     notFound();
   }
 
+  // Create image array with fallback
+  const images = venue.photos && venue.photos.length > 0 
+    ? venue.photos.slice(0, 4).map(photo => 
+      `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photo.reference}&key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}`
+    )
+    : ['/images/image-venue-landing.png'];
+
+  // Create a description based on venue type
+  const venueTypes = venue.types || [];
+  let venueDescription = "Un lieu idéal pour votre mariage.";
+  
+  if (venueTypes.includes("restaurant")) {
+    venueDescription = "Un restaurant élégant offrant un cadre parfait pour votre réception de mariage avec service de restauration sur place.";
+  } else if (venueTypes.includes("hotel") || venueTypes.includes("lodging")) {
+    venueDescription = "Un hôtel de qualité proposant des salles de réception pour mariages avec possibilité d'hébergement pour vos invités.";
+  } else if (venueTypes.includes("event_venue") || venueTypes.includes("banquet_hall")) {
+    venueDescription = "Une salle de fêtes spacieuse conçue pour accueillir de grands événements comme les mariages avec tous les équipements nécessaires.";
+  }
+
+  // Determine amenities based on types and location
+  const amenities = [
+    "Salle de réception",
+    venue.city ? `Situé à ${venue.city}` : "Emplacement stratégique",
+  ];
+  
+  if (venueTypes.includes("restaurant")) amenities.push("Service de restauration");
+  if (venueTypes.includes("lodging") || venueTypes.includes("hotel")) amenities.push("Hébergement disponible");
+  if (venueTypes.includes("parking")) amenities.push("Parking");
+  if (venue.openingHours?.weekdayText) amenities.push("Horaires flexibles");
+  
   return (
     <AppLayout requireAuth={true}>
       {/* Back button */}
@@ -240,7 +72,7 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
               <span>{venue.rating.toFixed(1)}</span>
               <span className="mx-1">•</span>
-              <span className="text-muted-foreground">{venue.reviews.length} avis</span>
+              <span className="text-muted-foreground">{venue.userRatingsTotal || 0} avis</span>
             </div>
             <span className="mx-1 hidden sm:inline">•</span>
             <div className="flex items-center mt-1 sm:mt-0">
@@ -264,14 +96,14 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
       <div className="mb-8">
         {/* Mobile carousel */}
         <div className="block sm:hidden">
-          <MobileImageCarousel images={venue.images} alt={venue.name} />
+          <MobileImageCarousel images={images} alt={venue.name} />
         </div>
         
         {/* Desktop gallery */}
         <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div className="sm:col-span-2 sm:row-span-2 relative aspect-[4/3]">
             <Image 
-              src={venue.images[0]} 
+              src={images[0]} 
               alt={venue.name}
               fill
               className="object-cover rounded-lg"
@@ -279,7 +111,7 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
               priority
             />
           </div>
-          {venue.images.slice(1, 4).map((image, i) => (
+          {images.slice(1).map((image, i) => (
             <div key={i} className="relative aspect-[4/3]">
               <Image 
                 src={image} 
@@ -305,19 +137,43 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <h2 className="text-2xl font-bold font-serif mb-4">À propos de ce lieu</h2>
-              <p className="text-muted-foreground mb-6">{venue.description}</p>
+              <p className="text-muted-foreground mb-6">{venueDescription}</p>
               
               <h3 className="text-xl font-bold font-serif mb-3">Détails</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">Capacité</Badge>
-                  <span>{venue.capacity}</span>
+                  <Badge variant="outline">Localisation</Badge>
+                  <span>{venue.city || "Non spécifié"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">Fourchette de prix</Badge>
                   <span>{venue.price}</span>
                 </div>
+                {venue.openingHours?.isOpen !== undefined && (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">Statut</Badge>
+                    <span className={venue.openingHours.isOpen ? "text-green-600" : "text-red-600"}>
+                      {venue.openingHours.isOpen ? "Ouvert maintenant" : "Fermé maintenant"}
+                    </span>
+                  </div>
+                )}
               </div>
+
+              {venue.openingHours?.weekdayText && (
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold font-serif mb-3">Horaires d'ouverture</h3>
+                  <div className="bg-muted/30 p-4 rounded-md">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {venue.openingHours.weekdayText.map((day, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-primary" />
+                          <span className="text-sm">{day}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div>
@@ -342,7 +198,7 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
         <TabsContent value="amenities">
           <h2 className="text-2xl font-bold font-serif mb-6">Équipements</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-            {venue.amenities.map((amenity, i) => (
+            {amenities.map((amenity, i) => (
               <div key={i} className="flex items-center gap-2 p-2 bg-muted/30 rounded-md sm:bg-transparent sm:p-0">
                 <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
                 <span className="text-sm sm:text-base">{amenity}</span>
@@ -357,28 +213,45 @@ export default async function VenueDetailPage({ params, searchParams }: PageProp
             <div className="flex items-center gap-2">
               <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
               <span className="font-bold">{venue.rating.toFixed(1)}</span>
-              <span className="text-muted-foreground">• {venue.reviews.length} avis</span>
+              <span className="text-muted-foreground">• {venue.userRatingsTotal || 0} avis</span>
             </div>
           </div>
           
           <div className="space-y-6">
-            {venue.reviews.map((review) => (
-              <div key={review.id} className="border-b pb-6">
-                <div className="flex justify-between mb-2">
-                  <h3 className="font-bold">{review.user}</h3>
-                  <span className="text-sm text-muted-foreground">{review.date}</span>
+            {venue.reviews && venue.reviews.length > 0 ? (
+              venue.reviews.map((review, index) => (
+                <div key={index} className="border-b pb-6">
+                  <div className="flex items-start gap-3 mb-2">
+                    {review.authorPhoto && (
+                      <Image 
+                        src={review.authorPhoto} 
+                        alt={review.authorName}
+                        width={40}
+                        height={40}
+                        className="rounded-full"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <div className="flex justify-between mb-2">
+                        <h3 className="font-bold">{review.authorName}</h3>
+                        <span className="text-sm text-muted-foreground">{review.relativeTime}</span>
+                      </div>
+                      <div className="flex items-center mb-2">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} 
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm">{review.text}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center mb-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} 
-                    />
-                  ))}
-                </div>
-                <p className="text-sm">{review.comment}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-muted-foreground text-center">Aucun avis disponible pour ce lieu.</p>
+            )}
           </div>
         </TabsContent>
       </Tabs>

@@ -20,6 +20,35 @@ export interface Venue {
   isFavorite: boolean;
   city?: string;
   types?: string[];
+  
+  // Additional fields from Places API
+  phoneNumber?: string;
+  internationalPhoneNumber?: string;
+  website?: string;
+  openingHours?: {
+    isOpen?: boolean;
+    weekdayText?: string[];
+  };
+  photos?: {
+    reference: string;
+    width: number; 
+    height: number;
+  }[];
+  reviews?: {
+    authorName: string;
+    authorPhoto?: string;
+    rating: number;
+    text: string;
+    time: number;
+    relativeTime: string;
+    language?: string;
+  }[];
+  placeUrl?: string;
+  userRatingsTotal?: number;
+  location?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 // Placeholder image to use if no photo is available
@@ -220,5 +249,81 @@ export async function fetchVenues(): Promise<Venue[]> {
   } catch (error) {
     console.error('Error fetching venues:', error);
     return [];
+  }
+}
+
+// Function to fetch detailed venue data for a single place
+export async function fetchVenueDetails(placeId: string): Promise<Venue | null> {
+  try {
+    const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+    
+    if (!API_KEY) {
+      throw new Error('Google Places API key is not defined');
+    }
+    
+    // Make request to Places Details API
+    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,place_id,formatted_address,formatted_phone_number,international_phone_number,geometry,website,rating,user_ratings_total,reviews,photos,types,opening_hours&key=${API_KEY}`;
+    
+    const response: any = await axios.get(detailsUrl);
+    
+    if (response.data.status !== 'OK' || !response.data.result) {
+      console.error(`Failed to fetch details for place ${placeId}: ${response.data.status}`);
+      return null;
+    }
+    
+    const place = response.data.result;
+    
+    // Transform photos
+    const photos = place.photos ? place.photos.map((photo: any) => ({
+      reference: photo.photo_reference,
+      width: photo.width,
+      height: photo.height
+    })) : [];
+    
+    // Create image URLs for up to 4 photos
+    const imageUrls = photos.slice(0, 4).map((photo: any) => 
+      `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photo.reference}&key=${API_KEY}`
+    );
+    
+    // Transform reviews
+    const reviews = place.reviews ? place.reviews.map((review: any) => ({
+      authorName: review.author_name,
+      authorPhoto: review.profile_photo_url,
+      rating: review.rating,
+      text: review.text,
+      time: review.time,
+      relativeTime: review.relative_time_description,
+      language: review.language
+    })) : [];
+    
+    // Build venue object
+    const venue: Venue = {
+      id: place.place_id,
+      name: place.name,
+      address: place.formatted_address,
+      rating: place.rating || 0,
+      price: "Prix: Sur demande", // Default price since Google Places doesn't provide pricing
+      image: imageUrls[0] || '/images/image-venue-landing.png', // First photo or fallback
+      isFavorite: false,
+      phoneNumber: place.formatted_phone_number,
+      internationalPhoneNumber: place.international_phone_number,
+      website: place.website,
+      openingHours: {
+        isOpen: place.opening_hours?.open_now,
+        weekdayText: place.opening_hours?.weekday_text
+      },
+      photos: photos,
+      reviews: reviews,
+      placeUrl: `https://maps.google.com/?q=${place.name}&cid=${place.place_id}`,
+      userRatingsTotal: place.user_ratings_total,
+      location: place.geometry?.location,
+      types: place.types
+    };
+    
+    return venue;
+    
+  } catch (error) {
+    console.error(`Error fetching venue details for ${placeId}:`, error);
+    return null;
   }
 } 
