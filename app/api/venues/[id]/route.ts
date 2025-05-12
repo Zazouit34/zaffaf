@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
 // Helper function to delay execution (for rate limiting)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteParams
 ) {
   try {
-    const placeId = params.id;
+    const placeId = context.params.id;
     
     if (!placeId) {
       return NextResponse.json({ error: "Place ID is required" }, { status: 400 });
