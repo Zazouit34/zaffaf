@@ -32,6 +32,8 @@ const cities = [
   "Batna",
   "Constantine",
   "Blida",
+  "Bejaia",
+  "Tizi Ouzou",
   "Bordj Bouarreridj",
 ];
 
