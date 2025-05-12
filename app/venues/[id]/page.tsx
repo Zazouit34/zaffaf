@@ -11,12 +11,10 @@ import { MobileImageCarousel } from "@/components/mobile-image-carousel";
 import { VenueContactDialog } from "@/components/venue-contact-dialog";
 import { fetchVenueDetails } from "@/app/actions/venues";
 
-// Define the params type according to Next.js expectations
+// Define the params type according to Next.js expectations in deployed environments
 interface PageProps {
-  params: {
-    id: string;
-  };
-  searchParams?: Record<string, string | string[] | undefined>;
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 // Make this a dynamic page since we're fetching data from an external API
@@ -24,8 +22,11 @@ export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 export default async function VenueDetailPage({ params }: PageProps) {
+  // Await the params since it's a Promise in the deployed environment
+  const resolvedParams = await params;
+  
   // Fetch the venue details using the ID from params
-  const venue = await fetchVenueDetails(params.id);
+  const venue = await fetchVenueDetails(resolvedParams.id);
   
   if (!venue) {
     notFound();
