@@ -27,12 +27,19 @@ const cities = [
   "Alger",
   "Oran",
   "Setif",
-   "Bordj Bouarreridj",
   "Tlemcen",
   "Annaba",
   "Batna",
   "Constantine",
   "Blida",
+  "Bordj Bouarreridj",
+  "Béjaïa",
+  "Tizi Ouzou",
+  "Tipaza",
+  "Skikda",
+  "Sétif",
+  "Souk Ahras",
+  
   
 ];
 
