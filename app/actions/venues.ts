@@ -1,6 +1,7 @@
 'use server';
 
 import axios from 'axios';
+import pLimit from 'p-limit';
 
 interface VenuePhoto {
   photo_reference: string;
@@ -132,11 +133,13 @@ export async function fetchVenues(): Promise<Venue[]> {
       throw new Error('Google Places API key is not defined');
     }
     
-    // Create an array of promises for each city search
-    const cityPromises = cities.map(async (city) => {
-      // Fetch venues for this city with pagination (up to 3 pages = up to 60 results per city)
-      return fetchVenuesForCity(city, API_KEY, 3);
-    });
+    // Create a rate limiter with max 3 concurrent requests
+    const limit = pLimit(3); // Max 3 concurrent city requests
+    
+    // Create an array of promises for each city search with rate limiting
+    const cityPromises = cities.map((city) =>
+      limit(() => fetchVenuesForCity(city, API_KEY, 3))
+    );
     
     // Wait for all city searches to complete
     const cityResults = await Promise.all(cityPromises);
@@ -144,8 +147,11 @@ export async function fetchVenues(): Promise<Venue[]> {
     // Flatten the array of arrays into a single array of venues
     const allVenues = cityResults.flat();
     
-    // Return all venues
-    return allVenues;
+    // Deduplicate venues by place_id
+    const uniqueVenues = Array.from(new Map(allVenues.map(v => [v.id, v])).values());
+    
+    // Return all unique venues
+    return uniqueVenues;
   } catch (error) {
     console.error('Error fetching venues:', error);
     return [];
