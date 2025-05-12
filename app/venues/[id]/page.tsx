@@ -9,10 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/components/app-layout";
 import { MobileImageCarousel } from "@/components/mobile-image-carousel";
 import { VenueContactDialog } from "@/components/venue-contact-dialog";
-import { Venue, fetchVenueDetails } from "@/app/actions/venues";
+import { fetchVenueDetails } from "@/app/actions/venues";
 
+// Define the params type according to Next.js expectations
 interface PageProps {
-  params: { id: string };
+  params: {
+    id: string;
+  };
+  searchParams?: Record<string, string | string[] | undefined>;
 }
 
 // Make this a dynamic page since we're fetching data from an external API
@@ -20,11 +24,18 @@ export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
 export default async function VenueDetailPage({ params }: PageProps) {
+  // Fetch the venue details using the ID from params
   const venue = await fetchVenueDetails(params.id);
   
   if (!venue) {
     notFound();
   }
+
+  // Ensure isFavorite is set (needed for VenueContactDialog)
+  const venueWithFavorite = {
+    ...venue,
+    isFavorite: venue.isFavorite || false
+  };
 
   // Create image array with fallback
   const images = venue.photos && venue.photos.length > 0 
@@ -86,7 +97,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
             <Heart className="h-4 w-4" />
             <span>Sauvegarder</span>
           </Button>
-          <VenueContactDialog venue={venue}>
+          <VenueContactDialog venue={venueWithFavorite}>
             <Button>Contacter</Button>
           </VenueContactDialog>
         </div>
@@ -186,7 +197,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
                     <Calendar className="h-5 w-5 text-primary" />
                     <span>Vérifier la disponibilité</span>
                   </div>
-                  <VenueContactDialog venue={venue}>
+                  <VenueContactDialog venue={venueWithFavorite}>
                     <Button className="w-full text-base py-5 sm:py-2">Demander des informations</Button>
                   </VenueContactDialog>
                 </CardContent>
@@ -262,7 +273,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
           <Heart className="h-4 w-4" />
           <span>Sauvegarder</span>
         </Button>
-        <VenueContactDialog venue={venue}>
+        <VenueContactDialog venue={venueWithFavorite}>
           <Button className="flex-1">Contacter</Button>
         </VenueContactDialog>
       </div>
