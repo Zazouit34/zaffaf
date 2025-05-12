@@ -152,9 +152,10 @@ async function fetchVenuesWithTerm(city: string, searchTerm: string, apiKey: str
     do {
       // For the first page, use the standard query
       // For subsequent pages, use the nextPageToken
+      // Use language=fr for UI but keep reviews in original language with reviews_no_translations=true
       const searchUrl: string = nextPageToken
-        ? `https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken=${nextPageToken}&language=fr&key=${apiKey}`
-        : `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(searchTerm)}+${encodeURIComponent(city)}+Algeria&language=fr&key=${apiKey}`;
+        ? `https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken=${nextPageToken}&language=fr&reviews_no_translations=true&key=${apiKey}`
+        : `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(searchTerm)}+${encodeURIComponent(city)}+Algeria&language=fr&reviews_no_translations=true&key=${apiKey}`;
       
       // Wait 2 seconds before requesting with a next_page_token (Google's requirement)
       if (nextPageToken) {
@@ -261,27 +262,17 @@ export async function fetchVenueDetails(placeId: string): Promise<Venue | null> 
       throw new Error('Google Places API key is not defined');
     }
     
-    // Make request to Places Details API with language set to French, but reviews in original language
-    // We split the fields to get reviews separately without translation
-    const baseUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}`;
-    const baseFields = "name,place_id,formatted_address,formatted_phone_number,international_phone_number,geometry,website,rating,user_ratings_total,photos,types,opening_hours";
+    // Make request to Places Details API with reviews in original language
+    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&language=fr&fields=name,place_id,formatted_address,formatted_phone_number,international_phone_number,geometry,website,rating,user_ratings_total,photos,types,opening_hours,reviews&reviews_no_translations=true&key=${API_KEY}`;
     
-    // First, get the main details in French
-    const mainDetailsUrl = `${baseUrl}&language=fr&fields=${baseFields}&key=${API_KEY}`;
-    const mainResponse: any = await axios.get(mainDetailsUrl);
+    const response: any = await axios.get(detailsUrl);
     
-    if (mainResponse.data.status !== 'OK' || !mainResponse.data.result) {
-      console.error(`Failed to fetch details for place ${placeId}: ${mainResponse.data.status}`);
+    if (response.data.status !== 'OK' || !response.data.result) {
+      console.error(`Failed to fetch details for place ${placeId}: ${response.data.status}`);
       return null;
     }
     
-    // Then, get the reviews in their original language
-    const reviewsUrl = `${baseUrl}&fields=reviews&key=${API_KEY}`;
-    const reviewsResponse: any = await axios.get(reviewsUrl);
-    
-    // Combine the results
-    const place = mainResponse.data.result;
-    place.reviews = reviewsResponse.data.status === 'OK' ? reviewsResponse.data.result.reviews : [];
+    const place = response.data.result;
     
     // Transform photos
     const photos = place.photos ? place.photos.map((photo: any) => ({
@@ -295,14 +286,52 @@ export async function fetchVenueDetails(placeId: string): Promise<Venue | null> 
       `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photo.reference}&key=${API_KEY}`
     );
     
+    // Translate relative time descriptions to French
+    const translateRelativeTime = (englishTime: string): string => {
+      const translations: Record<string, string> = {
+        'a minute ago': 'il y a une minute',
+        'minutes ago': 'minutes',
+        'an hour ago': 'il y a une heure',
+        'hours ago': 'heures',
+        'a day ago': 'il y a un jour',
+        'days ago': 'jours',
+        'a week ago': 'il y a une semaine',
+        'weeks ago': 'semaines',
+        'a month ago': 'il y a un mois',
+        'months ago': 'mois',
+        'a year ago': 'il y a un an',
+        'years ago': 'ans'
+      };
+      
+      // Handle common patterns
+      for (const [english, french] of Object.entries(translations)) {
+        if (englishTime.includes(english)) {
+          return englishTime.replace(english, french);
+        }
+      }
+      
+      // Handle "X time ago" pattern
+      for (const [english, french] of Object.entries(translations)) {
+        if (english.endsWith(' ago') && !english.startsWith('a ')) {
+          const pattern = new RegExp(`(\\d+) ${english.replace(' ago', '')}`);
+          const match = englishTime.match(pattern);
+          if (match) {
+            return `il y a ${match[1]} ${french}`;
+          }
+        }
+      }
+      
+      return englishTime;
+    };
+    
     // Transform reviews
     const reviews = place.reviews ? place.reviews.map((review: any) => ({
       authorName: review.author_name,
       authorPhoto: review.profile_photo_url,
       rating: review.rating,
-      text: review.text,
+      text: review.text,                          // Keep original text
       time: review.time,
-      relativeTime: review.relative_time_description,
+      relativeTime: translateRelativeTime(review.relative_time_description), // Translate to French
       language: review.language
     })) : [];
     

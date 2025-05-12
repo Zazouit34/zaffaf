@@ -21,6 +21,24 @@ interface PageProps {
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
 
+// Language name mapping helper
+function getLanguageName(code: string): string {
+  const languages: Record<string, string> = {
+    'fr': 'français',
+    'en': 'anglais',
+    'ar': 'arabe',
+    'es': 'espagnol',
+    'it': 'italien',
+    'de': 'allemand',
+    'pt': 'portugais',
+    'ru': 'russe',
+    'zh': 'chinois',
+    'ja': 'japonais'
+  };
+  
+  return languages[code] || code;
+}
+
 export default async function VenueDetailPage({ params }: PageProps) {
   // Await the params since it's a Promise in the deployed environment
   const resolvedParams = await params;
@@ -283,6 +301,12 @@ export default async function VenueDetailPage({ params }: PageProps) {
                             className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} 
                           />
                         ))}
+                        {/* Add a subtle language indicator for non-French reviews */}
+                        {review.language && review.language !== 'fr' && (
+                          <span className="ml-2 text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+                            {getLanguageName(review.language)}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm">{review.text}</p>
                     </div>
