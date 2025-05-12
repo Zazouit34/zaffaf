@@ -32,10 +32,38 @@ export default async function VenueDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // Extract city from address if not already set
+  let venueCity = venue.city;
+  if (!venueCity && venue.address) {
+    // Try to extract the city from the address
+    // Addresses in Algeria often end with the city name or have it after a comma
+    const addressParts = venue.address.split(',').map(part => part.trim());
+    
+    // City is usually either the last part or second-to-last part
+    // (sometimes the last part is just "Algeria")
+    if (addressParts.length > 1) {
+      const lastPart = addressParts[addressParts.length - 1];
+      const secondLastPart = addressParts[addressParts.length - 2];
+      
+      // If the last part is "Algeria" or contains a postal code, use the second-to-last part
+      if (lastPart.includes("Algeria") || lastPart.includes("Algérie") || /\d{4,5}/.test(lastPart)) {
+        venueCity = secondLastPart;
+      } else {
+        venueCity = lastPart;
+      }
+      
+      // If the extracted city contains a postal code, clean it up
+      if (venueCity && /\d{4,5}/.test(venueCity)) {
+        venueCity = venueCity.replace(/\d{4,5}/, '').trim();
+      }
+    }
+  }
+
   // Ensure isFavorite is set (needed for VenueContactDialog)
   const venueWithFavorite = {
     ...venue,
-    isFavorite: venue.isFavorite || false
+    isFavorite: venue.isFavorite || false,
+    city: venueCity || "Algérie" // Use extracted city or default to "Algérie"
   };
 
   // Create image array with fallback
@@ -60,7 +88,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
   // Determine amenities based on types and location
   const amenities = [
     "Salle de réception",
-    venue.city ? `Situé à ${venue.city}` : "Emplacement stratégique",
+    venueCity ? `Situé à ${venueCity}` : "Emplacement stratégique",
   ];
   
   if (venueTypes.includes("restaurant")) amenities.push("Service de restauration");
@@ -155,7 +183,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">Localisation</Badge>
-                  <span>{venue.city || "Non spécifié"}</span>
+                  <span>{venueCity || "Non spécifié"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">Fourchette de prix</Badge>
