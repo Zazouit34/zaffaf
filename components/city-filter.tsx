@@ -43,11 +43,13 @@ export function CityFilter({ cities, selectedCity, onCityChange }: CityFilterPro
     
     checkScrollability();
     scrollContainerRef.current?.addEventListener('scroll', checkScrollability);
+    window.addEventListener('resize', checkScrollability);
     
     return () => {
       scrollContainerRef.current?.removeEventListener('scroll', checkScrollability);
+      window.removeEventListener('resize', checkScrollability);
     };
-  }, []);
+  }, [cities]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
@@ -60,6 +62,11 @@ export function CityFilter({ cities, selectedCity, onCityChange }: CityFilterPro
       behavior: 'smooth'
     });
   };
+
+  // Debug log for cities
+  useEffect(() => {
+    console.log(`CityFilter rendering with ${cities.length} cities: ${cities.join(', ')}`);
+  }, [cities]);
 
   return (
     <div className="relative w-full mb-6">
@@ -88,16 +95,20 @@ export function CityFilter({ cities, selectedCity, onCityChange }: CityFilterPro
           Toutes les villes
         </Button>
         
-        {cities.map((city) => (
-          <Button
-            key={city}
-            variant={selectedCity === city ? "default" : "outline"}
-            className="whitespace-nowrap rounded-full"
-            onClick={() => onCityChange(city)}
-          >
-            {city}
-          </Button>
-        ))}
+        {cities.length > 0 ? (
+          cities.map((city) => (
+            <Button
+              key={city}
+              variant={selectedCity === city ? "default" : "outline"}
+              className="whitespace-nowrap rounded-full"
+              onClick={() => onCityChange(city)}
+            >
+              {city}
+            </Button>
+          ))
+        ) : (
+          <span className="text-sm text-muted-foreground ml-2">Chargement des villes...</span>
+        )}
       </div>
       
       {/* Right arrow - only on desktop */}

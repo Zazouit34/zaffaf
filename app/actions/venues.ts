@@ -41,12 +41,15 @@ const cities = [
   "Souk Ahras",
 ];
 
+// Limit of results per city to prevent Google API quota issues
+const MAX_RESULTS_PER_CITY = 20;
+
 // Normalize the search results to ensure they match the exact city names in our filter
 function normalizeCity(address: string, searchedCity: string): string {
   // Check if the address contains any of our city names
   for (const city of cities) {
     // If the city is mentioned in the address, prioritize our standardized name
-    if (address.includes(city)) {
+    if (address.toLowerCase().includes(city.toLowerCase())) {
       return city;
     }
   }
@@ -63,6 +66,8 @@ export async function fetchVenues(): Promise<Venue[]> {
       throw new Error('Google Places API key is not defined');
     }
     
+    console.log(`Searching for venues in ${cities.length} cities...`);
+    
     // Create an array of promises for each city search
     const cityPromises = cities.map(async (city) => {
       const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=salle+des+fetes+mariage+${encodeURIComponent(city)}+Algeria&key=${API_KEY}`;
@@ -75,8 +80,10 @@ export async function fetchVenues(): Promise<Venue[]> {
           return [];
         }
         
-        // Transform the API response into our venue format
-        return response.data.results.map((place: any) => {
+        console.log(`Found ${response.data.results.length} venues for ${city}`);
+        
+        // Transform the API response into our venue format (limit to MAX_RESULTS_PER_CITY)
+        return response.data.results.slice(0, MAX_RESULTS_PER_CITY).map((place: any) => {
           // Get a photo URL if available
           let photoUrl = PLACEHOLDER_IMAGE;
           
@@ -121,10 +128,15 @@ export async function fetchVenues(): Promise<Venue[]> {
     // Flatten the array of arrays into a single array of venues and filter out duplicates
     const allVenues = cityResults.flat();
     
+    console.log(`Total venues before deduplication: ${allVenues.length}`);
+    
     // Filter out duplicate venues based on place_id
     const uniqueVenues = allVenues.filter((venue, index, self) => 
       index === self.findIndex((v) => v.id === venue.id)
     );
+    
+    console.log(`Total unique venues: ${uniqueVenues.length}`);
+    console.log(`Cities represented: ${Array.from(new Set(uniqueVenues.map(v => v.city))).join(', ')}`);
     
     // Return all unique venues
     return uniqueVenues;

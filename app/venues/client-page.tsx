@@ -14,25 +14,35 @@ export function VenuesClientPage({ venues }: VenuesClientPageProps) {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>(venues);
 
-  // Extract unique cities from venues
+  // Extract unique cities from venues with proper error handling
   const cities = useMemo(() => {
+    console.log(`Extracting cities from ${venues.length} venues`);
     const citySet = new Set<string>();
+    
     venues.forEach((venue) => {
-      if (venue.city) {
-        citySet.add(venue.city);
+      if (venue.city && venue.city.trim()) {
+        citySet.add(venue.city.trim());
       }
     });
-    return Array.from(citySet).sort();
+    
+    const sortedCities = Array.from(citySet).sort();
+    console.log(`Extracted ${sortedCities.length} unique cities: ${sortedCities.join(', ')}`);
+    return sortedCities;
   }, [venues]);
 
   // Filter venues by selected city
   useEffect(() => {
     if (!selectedCity) {
       setFilteredVenues(venues);
+      console.log(`Showing all ${venues.length} venues`);
     } else {
+      console.log(`Filtering for city: ${selectedCity}`);
+      
       const filtered = venues.filter((venue) => 
         venue.city && venue.city.toLowerCase() === selectedCity.toLowerCase()
       );
+      
+      console.log(`Found ${filtered.length} venues in ${selectedCity}`);
       setFilteredVenues(filtered);
     }
   }, [venues, selectedCity]);
