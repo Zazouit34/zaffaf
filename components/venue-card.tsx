@@ -26,6 +26,9 @@ interface VenueCardProps {
   city?: string;
 }
 
+// Default placeholder image
+const PLACEHOLDER_IMAGE = "/images/image-venue-landing.png";
+
 export function VenueCard({ 
   id, 
   name, 
@@ -37,6 +40,7 @@ export function VenueCard({
   city
 }: VenueCardProps) {
   const [favorite, setFavorite] = useState(isFavorite);
+  const [imgSrc, setImgSrc] = useState(image || PLACEHOLDER_IMAGE);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -45,17 +49,25 @@ export function VenueCard({
     // Ici vous appelleriez généralement une API pour sauvegarder l'état des favoris
   };
 
+  // Handle image load error
+  const handleImageError = () => {
+    console.log("Image failed to load, using placeholder");
+    setImgSrc(PLACEHOLDER_IMAGE);
+  };
+
   return (
     <Link href={`/venues/${id}`} className="block">
       <Card className="overflow-hidden h-full transition-all hover:shadow-lg">
         <div className="p-3 pt-3">
           <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden">
             <Image
-              src={image || "/images/image-venue-landing.png"}
+              src={imgSrc}
               alt={name}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={handleImageError}
+              priority={false}
             />
             <Button
               variant="ghost"

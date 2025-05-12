@@ -19,6 +19,9 @@ export interface Venue {
   city?: string;
 }
 
+// Placeholder image to use if no photo is available
+const PLACEHOLDER_IMAGE = '/images/image-venue-landing.png';
+
 // List of major Algerian cities to search for venues
 const cities = [
   "Alger",
@@ -56,11 +59,18 @@ export async function fetchVenues(): Promise<Venue[]> {
         // Transform the API response into our venue format
         return response.data.results.map((place: any) => {
           // Get a photo URL if available
-          let photoUrl = '/images/venue-placeholder.jpg';
+          let photoUrl = PLACEHOLDER_IMAGE;
           
           if (place.photos && place.photos.length > 0) {
-            const photoReference = place.photos[0].photo_reference;
-            photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoReference}&key=${API_KEY}`;
+            try {
+              const photoReference = place.photos[0].photo_reference;
+              if (photoReference) {
+                photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${photoReference}&key=${API_KEY}`;
+              }
+            } catch (photoError) {
+              console.warn('Error getting photo for venue:', photoError);
+              photoUrl = PLACEHOLDER_IMAGE;
+            }
           }
           
           // Default price range since Google Places doesn't provide pricing
