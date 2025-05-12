@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { VenueCard } from "@/components/venue-card";
 import { AppLayout } from "@/components/app-layout";
 import { Venue } from "@/app/actions/venues";
@@ -12,6 +12,7 @@ interface VenuesClientPageProps {
 
 export function VenuesClientPage({ venues }: VenuesClientPageProps) {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [filteredVenues, setFilteredVenues] = useState<Venue[]>(venues);
 
   // Extract unique cities from venues
   const cities = useMemo(() => {
@@ -21,14 +22,38 @@ export function VenuesClientPage({ venues }: VenuesClientPageProps) {
         citySet.add(venue.city);
       }
     });
-    return Array.from(citySet);
+    return Array.from(citySet).sort();
   }, [venues]);
 
   // Filter venues by selected city
-  const filteredVenues = useMemo(() => {
-    if (!selectedCity) return venues;
-    return venues.filter((venue) => venue.city === selectedCity);
+  useEffect(() => {
+    if (!selectedCity) {
+      setFilteredVenues(venues);
+    } else {
+      const filtered = venues.filter((venue) => 
+        venue.city && venue.city.toLowerCase() === selectedCity.toLowerCase()
+      );
+      setFilteredVenues(filtered);
+    }
   }, [venues, selectedCity]);
+
+  // Log for debugging
+  useEffect(() => {
+    if (selectedCity) {
+      console.log(`Filtering for city: ${selectedCity}`);
+      console.log(`Found ${filteredVenues.length} venues in ${selectedCity}`);
+      
+      // Check if any venues don't match the filter
+      const mismatchVenues = filteredVenues.filter(
+        venue => venue.city?.toLowerCase() !== selectedCity.toLowerCase()
+      );
+      
+      if (mismatchVenues.length > 0) {
+        console.warn(`Found ${mismatchVenues.length} venues with wrong city:`, 
+          mismatchVenues.map(v => `${v.name} (${v.city})`));
+      }
+    }
+  }, [selectedCity, filteredVenues]);
 
   return (
     <AppLayout requireAuth={true}>

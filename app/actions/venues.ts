@@ -39,9 +39,21 @@ const cities = [
   "Skikda",
   "Sétif",
   "Souk Ahras",
-  
-  
 ];
+
+// Normalize the search results to ensure they match the exact city names in our filter
+function normalizeCity(address: string, searchedCity: string): string {
+  // Check if the address contains any of our city names
+  for (const city of cities) {
+    // If the city is mentioned in the address, prioritize our standardized name
+    if (address.includes(city)) {
+      return city;
+    }
+  }
+  
+  // If no direct match, return the city we searched for
+  return searchedCity;
+}
 
 export async function fetchVenues(): Promise<Venue[]> {
   try {
@@ -83,6 +95,9 @@ export async function fetchVenues(): Promise<Venue[]> {
           // Default price range since Google Places doesn't provide pricing
           const priceRange = "Prix: Sur demande";
           
+          // Use the normalized city to ensure consistency
+          const normalizedCity = normalizeCity(place.formatted_address, city);
+          
           return {
             id: place.place_id,
             name: place.name,
@@ -91,7 +106,7 @@ export async function fetchVenues(): Promise<Venue[]> {
             price: priceRange,
             image: photoUrl,
             isFavorite: false,
-            city: city
+            city: normalizedCity
           };
         });
       } catch (error) {
@@ -103,11 +118,16 @@ export async function fetchVenues(): Promise<Venue[]> {
     // Wait for all city searches to complete
     const cityResults = await Promise.all(cityPromises);
     
-    // Flatten the array of arrays into a single array of venues
+    // Flatten the array of arrays into a single array of venues and filter out duplicates
     const allVenues = cityResults.flat();
     
-    // Return all venues without limiting
-    return allVenues;
+    // Filter out duplicate venues based on place_id
+    const uniqueVenues = allVenues.filter((venue, index, self) => 
+      index === self.findIndex((v) => v.id === venue.id)
+    );
+    
+    // Return all unique venues
+    return uniqueVenues;
   } catch (error) {
     console.error('Error fetching venues:', error);
     return [];
