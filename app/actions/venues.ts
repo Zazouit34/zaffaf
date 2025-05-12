@@ -74,7 +74,7 @@ export async function fetchVenues(): Promise<Venue[]> {
           }
           
           // Default price range since Google Places doesn't provide pricing
-          const priceRange = "Sur demande";
+          const priceRange = "Prix: Sur demande";
           
           return {
             id: place.place_id,
