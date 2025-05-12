@@ -1,21 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
-type RouteParams = {
-  params: {
-    id: string;
-  };
-};
-
 // Helper function to delay execution (for rate limiting)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// In Next.js App Router, the route handlers have a specific signature
 export async function GET(
   request: NextRequest,
-  context: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
-    const placeId = context.params.id;
+    const placeId = params.id;
     
     if (!placeId) {
       return NextResponse.json({ error: "Place ID is required" }, { status: 400 });
