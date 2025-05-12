@@ -24,7 +24,7 @@ export interface Venue {
 const PLACEHOLDER_IMAGE = '/images/image-venue-landing.png';
 
 // List of major Algerian cities to search for venues
-const cities = [
+export const cities = [
   "Alger",
   "Oran",
   "Setif",

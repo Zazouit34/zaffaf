@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { VenueCard } from "@/components/venue-card";
 import { AppLayout } from "@/components/app-layout";
-import { Venue } from "@/app/actions/venues";
+import { Venue, cities as CITY_ORDER } from "@/app/actions/venues";
 import { CityFilter } from "@/components/city-filter";
 import {
   Pagination,
@@ -15,6 +15,23 @@ import {
   PaginationEllipsis,
 } from "@/components/ui/pagination";
 
+// Order of cities as defined in venues.ts
+// const CITY_ORDER = [
+//   "Alger",
+//   "Oran",
+//   "Setif",
+//   "Tlemcen",
+//   "Annaba",
+//   "Batna",
+//   "Constantine",
+//   "Blida",
+//   "Bejaia",
+//   "Tizi Ouzou",
+//   "Skikda",
+//   "Souk Ahras",
+//   "Bordj Bouarreridj",
+// ];
+
 interface VenuesClientPageProps {
   venues: Venue[];
 }
@@ -24,15 +41,33 @@ export function VenuesClientPage({ venues }: VenuesClientPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9; // Show 9 venues per page (3x3 grid)
 
-  // Extract unique cities from venues
+  // Extract unique cities from venues and sort them according to predefined order
   const cities = useMemo(() => {
+    // First collect all cities from venues
     const citySet = new Set<string>();
     venues.forEach((venue) => {
       if (venue.city) {
         citySet.add(venue.city);
       }
     });
-    return Array.from(citySet);
+    
+    // Convert to array and sort according to CITY_ORDER
+    return Array.from(citySet).sort((a, b) => {
+      const indexA = CITY_ORDER.indexOf(a);
+      const indexB = CITY_ORDER.indexOf(b);
+      
+      // If both cities are in the order list, sort by their position
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      
+      // If only one city is in the order list, prioritize it
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      
+      // If neither city is in the order list, sort alphabetically
+      return a.localeCompare(b);
+    });
   }, [venues]);
 
   // Filter venues by selected city
