@@ -59,7 +59,7 @@ export function AppHeader() {
         </Link>
         {user ? (
           <div className="flex justify-between items-center w-full sm:w-auto sm:justify-end sm:gap-4">
-            <div className="flex items-center gap-2">
+            <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               {userData?.photoURL ? (
                 <img 
                   src={userData.photoURL} 
@@ -77,7 +77,7 @@ export function AppHeader() {
               <span className="text-sm sm:hidden">
                 {userData?.firstName || user.email?.split('@')[0]}
               </span>
-            </div>
+            </Link>
             <Button variant="outline" size="sm" onClick={handleSignOut} className="whitespace-nowrap ml-4">
               Se déconnecter
             </Button>

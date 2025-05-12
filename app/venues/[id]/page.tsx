@@ -113,7 +113,7 @@ export default async function VenueDetailPage({ params }: PageProps) {
   if (venueTypes.includes("lodging") || venueTypes.includes("hotel")) amenities.push("Hébergement disponible");
   if (venueTypes.includes("parking")) amenities.push("Parking");
   if (venue.openingHours?.weekdayText) amenities.push("Horaires flexibles");
-  
+
   return (
     <AppLayout requireAuth={true}>
       {/* Back button */}
@@ -290,17 +290,17 @@ export default async function VenueDetailPage({ params }: PageProps) {
                       />
                     )}
                     <div className="flex-1">
-                      <div className="flex justify-between mb-2">
+                <div className="flex justify-between mb-2">
                         <h3 className="font-bold">{review.authorName}</h3>
                         <span className="text-sm text-muted-foreground">{review.relativeTime}</span>
-                      </div>
-                      <div className="flex items-center mb-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} 
-                          />
-                        ))}
+                </div>
+                <div className="flex items-center mb-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star 
+                      key={i} 
+                      className={`h-4 w-4 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} 
+                    />
+                  ))}
                         {/* Add a subtle language indicator for non-French reviews */}
                         {review.language && review.language !== 'fr' && (
                           <span className="ml-2 text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
