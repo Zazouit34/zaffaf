@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { addToFavorites, removeFromFavorites, checkIsFavorite } from "@/lib/favorites-service";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
+import { determineActualCity } from "@/app/data/city-coordinates";
 
 // Language name mapping helper
 function getLanguageName(code: string): string {
@@ -82,9 +83,16 @@ export default function VenueDetailPage({ params }: PageProps) {
           setIsFavorite(favoriteStatus);
         }
         
-        // Extract city from address if not already set
+        // Determine city from location data if available
         let venueCity = data.city;
-        if (!venueCity && data.address) {
+        
+        // If no city but we have location data, use determineActualCity
+        if ((!venueCity || venueCity === "") && data.location) {
+          venueCity = determineActualCity(data.location, "");
+        }
+        
+        // If still no city, try to extract from address as fallback
+        if ((!venueCity || venueCity === "") && data.address) {
           // Try to extract the city from the address
           // Addresses in Algeria often end with the city name or have it after a comma
           const addressParts = data.address.split(',').map((part: string) => part.trim());

@@ -3,6 +3,7 @@
 import axios from 'axios';
 import pLimit from 'p-limit';
 import { cities } from '@/app/data/cities';
+import { determineActualCity } from '@/app/data/city-coordinates';
 
 interface VenuePhoto {
   photo_reference: string;
@@ -97,7 +98,7 @@ const isRelevantVenue = (place: any): boolean => {
 };
 
 // Helper function to transform Google Places results into our venue format
-const transformPlacesToVenues = (places: any[], city: string, apiKey: string): Venue[] => {
+const transformPlacesToVenues = (places: any[], searchCity: string, apiKey: string): Venue[] => {
   return places
     .filter(place => {
       // Filter by relevant types
@@ -128,6 +129,9 @@ const transformPlacesToVenues = (places: any[], city: string, apiKey: string): V
       // Default price range since Google Places doesn't provide pricing
       const priceRange = "Prix: Sur demande";
       
+      // Determine the actual city based on geolocation
+      const actualCity = determineActualCity(place.geometry?.location, searchCity);
+      
       return {
         id: place.place_id,
         name: place.name,
@@ -136,8 +140,9 @@ const transformPlacesToVenues = (places: any[], city: string, apiKey: string): V
         price: priceRange,
         image: photoUrl,
         isFavorite: false,
-        city: city,
-        types: place.types
+        city: actualCity,
+        types: place.types,
+        location: place.geometry?.location
       };
     });
 };
@@ -335,6 +340,9 @@ export async function fetchVenueDetails(placeId: string): Promise<Venue | null> 
       language: review.language
     })) : [];
     
+    // Determine the actual city based on geolocation
+    const actualCity = determineActualCity(place.geometry?.location, "");
+    
     // Build venue object
     const venue: Venue = {
       id: place.place_id,
@@ -344,6 +352,7 @@ export async function fetchVenueDetails(placeId: string): Promise<Venue | null> 
       price: "Prix: Sur demande", // Default price since Google Places doesn't provide pricing
       image: imageUrls[0] || '/images/image-venue-landing.png', // First photo or fallback
       isFavorite: false,
+      city: actualCity, // Use geolocation-based city
       phoneNumber: place.formatted_phone_number,
       internationalPhoneNumber: place.international_phone_number,
       website: place.website,
