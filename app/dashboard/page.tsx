@@ -12,7 +12,7 @@ import { ProfileEditDialog } from "@/components/profile-edit-dialog";
 import { AppLayout } from "@/components/app-layout";
 import { FavoriteVenue, getUserFavorites, onFavoriteChange } from "@/lib/favorites-service";
 import { ChecklistItem, getChecklistItems, onChecklistChange } from "@/lib/checklist-service";
-import { Heart, CheckSquare, Calendar } from "lucide-react";
+import { Heart, CheckSquare, Calendar, CreditCard } from "lucide-react";
 
 interface UserData {
   firstName: string;
@@ -259,6 +259,21 @@ export default function DashboardPage() {
           
           <Link href="/checklist">
             <Button variant="secondary" className="w-full">Gérer ma liste de tâches</Button>
+          </Link>
+        </div>
+        
+        <div className="bg-card rounded-lg shadow p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <CreditCard className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-bold">Budget</h2>
+          </div>
+          
+          <p className="text-muted-foreground mb-4">
+            Gérez votre budget de mariage, suivez vos dépenses et restez dans les limites que vous vous êtes fixées.
+          </p>
+          
+          <Link href="/budget">
+            <Button variant="secondary" className="w-full">Gérer mon budget</Button>
           </Link>
         </div>
       </div>
