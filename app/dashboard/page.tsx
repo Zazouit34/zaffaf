@@ -10,9 +10,9 @@ import Link from "next/link";
 import { doc, getDoc } from "firebase/firestore";
 import { ProfileEditDialog } from "@/components/profile-edit-dialog";
 import { AppLayout } from "@/components/app-layout";
-import { FavoriteVenue, getUserFavorites } from "@/lib/favorites-service";
+import { FavoriteVenue, getUserFavorites, onFavoriteChange } from "@/lib/favorites-service";
 import { VenueCard } from "@/components/venue-card";
-import { Heart } from "lucide-react";
+import { Heart, CheckSquare, Calendar } from "lucide-react";
 
 interface UserData {
   firstName: string;
@@ -70,6 +70,21 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchUserData();
     fetchFavorites();
+    
+    // Listen for changes to favorites to update the dashboard
+    const unsubscribe = onFavoriteChange((venueId, isFavorite) => {
+      if (!isFavorite) {
+        // Remove from favorites if it was removed elsewhere
+        setFavorites(prevFavorites => 
+          prevFavorites.filter(venue => venue.id !== venueId)
+        );
+      } else {
+        // Refresh favorites if something was added
+        fetchFavorites();
+      }
+    });
+    
+    return () => unsubscribe();
   }, [user]);
 
   const handleProfileUpdate = () => {
@@ -166,6 +181,37 @@ export default function DashboardPage() {
           
           <Link href="/favorites">
             <Button variant="secondary" className="w-full">Explorer mes favoris</Button>
+          </Link>
+        </div>
+        
+        <div className="bg-card rounded-lg shadow p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <CheckSquare className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-bold">Tâches de mariage</h2>
+          </div>
+          
+          <div className="mb-4">
+            <p className="text-muted-foreground mb-4">
+              Suivez vos préparatifs de mariage grâce à notre liste de tâches personnalisable.
+            </p>
+            <div className="space-y-2 mt-2">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm">Tâches terminées: 0</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-sm">Tâches en cours: 0</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                <span className="text-sm">Tâches à faire: 0</span>
+              </div>
+            </div>
+          </div>
+          
+          <Link href="/checklist">
+            <Button variant="secondary" className="w-full">Gérer ma liste de tâches</Button>
           </Link>
         </div>
       </div>
