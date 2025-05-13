@@ -257,8 +257,8 @@ export default function ChecklistPage() {
 
       <div className="bg-card rounded-lg shadow">
         <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-          <div className="p-4 border-b">
-            <TabsList className="grid grid-cols-4 w-full">
+          <div className="p-4 border-b overflow-x-auto">
+            <TabsList className="grid grid-cols-4 w-full min-w-[400px]">
               <TabsTrigger value="all">
                 Toutes ({checklistItems.length})
               </TabsTrigger>
@@ -431,7 +431,7 @@ function ChecklistItems({
     <div className="divide-y">
       {items.map((item) => (
         <div key={item.id} className="p-4 hover:bg-muted/50">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex items-start gap-3 flex-1">
               <div className="mt-1">
                 <StatusIcon status={item.status} />
@@ -451,7 +451,7 @@ function ChecklistItems({
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2 ml-4">
+            <div className="flex flex-row sm:flex-row items-center space-x-2 mt-2 sm:mt-0 sm:ml-4">
               <Select 
                 value={item.status}
                 onValueChange={(value) => onStatusChange(item.id, value as "todo" | "in-progress" | "completed")}
@@ -465,12 +465,14 @@ function ChecklistItems({
                   <SelectItem value="completed">Terminée</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="ghost" size="icon" onClick={() => onEdit(item)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center space-x-1">
+                <Button variant="ghost" size="icon" onClick={() => onEdit(item)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
