@@ -3,13 +3,18 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { AppLayout } from "@/components/app-layout";
-import { CheckSquare, Plus, Edit, Trash2, Check, X, Clock } from "lucide-react";
+import { CheckSquare, Plus, Edit, Trash2, Check, X, Clock, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { 
   ChecklistItem, 
@@ -47,7 +52,7 @@ export default function ChecklistPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [newItemTitle, setNewItemTitle] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
-  const [newItemDueDate, setNewItemDueDate] = useState("");
+  const [newItemDueDate, setNewItemDueDate] = useState<Date | undefined>(undefined);
   const [newItemPriority, setNewItemPriority] = useState<"low" | "medium" | "high">("medium");
   const [editItem, setEditItem] = useState<ChecklistItem | null>(null);
   const [activeTab, setActiveTab] = useState("all");
@@ -80,14 +85,14 @@ export default function ChecklistPage() {
       const success = await addItem(
         newItemTitle,
         newItemDescription,
-        newItemDueDate ? new Date(newItemDueDate) : null,
+        newItemDueDate || null,
         newItemPriority
       );
       
       if (success) {
         setNewItemTitle("");
         setNewItemDescription("");
-        setNewItemDueDate("");
+        setNewItemDueDate(undefined);
         setNewItemPriority("medium");
         fetchChecklistItems();
       }
@@ -204,12 +209,32 @@ export default function ChecklistPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Input
-                type="date"
-                value={newItemDueDate}
-                onChange={(e) => setNewItemDueDate(e.target.value)}
-                placeholder="Date limite"
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !newItemDueDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {newItemDueDate ? (
+                      format(newItemDueDate, "PPP", { locale: fr })
+                    ) : (
+                      <span>Date limite</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={newItemDueDate}
+                    onSelect={setNewItemDueDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <Select value={newItemPriority} onValueChange={(value) => setNewItemPriority(value as "low" | "medium" | "high")}>
@@ -316,11 +341,32 @@ export default function ChecklistPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Input
-                    type="date"
-                    value={editItem.dueDate ? new Date(editItem.dueDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => setEditItem({...editItem, dueDate: e.target.value ? new Date(e.target.value) : null})}
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !editItem.dueDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {editItem.dueDate ? (
+                          format(new Date(editItem.dueDate), "PPP", { locale: fr })
+                        ) : (
+                          <span>Date limite</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={editItem.dueDate ? new Date(editItem.dueDate) : undefined}
+                        onSelect={(date) => setEditItem({...editItem, dueDate: date || null})}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div>
                   <Select 
