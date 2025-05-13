@@ -11,7 +11,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { ProfileEditDialog } from "@/components/profile-edit-dialog";
 import { AppLayout } from "@/components/app-layout";
 import { FavoriteVenue, getUserFavorites, onFavoriteChange } from "@/lib/favorites-service";
-import { VenueCard } from "@/components/venue-card";
+import { ChecklistItem, getChecklistItems, onChecklistChange } from "@/lib/checklist-service";
 import { Heart, CheckSquare, Calendar } from "lucide-react";
 
 interface UserData {
@@ -30,6 +30,13 @@ export default function DashboardPage() {
   const [loadingUserData, setLoadingUserData] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteVenue[]>([]);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
+  const [checklistStats, setChecklistStats] = useState({
+    total: 0,
+    completed: 0,
+    inProgress: 0,
+    todo: 0
+  });
+  const [loadingChecklist, setLoadingChecklist] = useState(false);
 
   const fetchUserData = async () => {
     if (user) {
@@ -67,12 +74,38 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchChecklistStats = async () => {
+    if (user) {
+      try {
+        setLoadingChecklist(true);
+        const items = await getChecklistItems();
+        
+        // Calculate statistics
+        const completed = items.filter((item: ChecklistItem) => item.status === "completed").length;
+        const inProgress = items.filter((item: ChecklistItem) => item.status === "in-progress").length;
+        const todo = items.filter((item: ChecklistItem) => item.status === "todo").length;
+        
+        setChecklistStats({
+          total: items.length,
+          completed,
+          inProgress,
+          todo
+        });
+      } catch (error) {
+        console.error("Error fetching checklist stats:", error);
+      } finally {
+        setLoadingChecklist(false);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchUserData();
     fetchFavorites();
+    fetchChecklistStats();
     
     // Listen for changes to favorites to update the dashboard
-    const unsubscribe = onFavoriteChange((venueId, isFavorite) => {
+    const unsubscribeFavorites = onFavoriteChange((venueId, isFavorite) => {
       if (!isFavorite) {
         // Remove from favorites if it was removed elsewhere
         setFavorites(prevFavorites => 
@@ -84,7 +117,15 @@ export default function DashboardPage() {
       }
     });
     
-    return () => unsubscribe();
+    // Listen for changes to checklist to update the dashboard
+    const unsubscribeChecklist = onChecklistChange(() => {
+      fetchChecklistStats();
+    });
+    
+    return () => {
+      unsubscribeFavorites();
+      unsubscribeChecklist();
+    };
   }, [user]);
 
   const handleProfileUpdate = () => {
@@ -190,25 +231,31 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold">Tâches de mariage</h2>
           </div>
           
-          <div className="mb-4">
-            <p className="text-muted-foreground mb-4">
-              Suivez vos préparatifs de mariage grâce à notre liste de tâches personnalisable.
-            </p>
-            <div className="space-y-2 mt-2">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Tâches terminées: 0</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm">Tâches en cours: 0</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                <span className="text-sm">Tâches à faire: 0</span>
+          {loadingChecklist ? (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="mb-4">
+              <p className="text-muted-foreground mb-4">
+                Suivez vos préparatifs de mariage grâce à notre liste de tâches personnalisable.
+              </p>
+              <div className="space-y-2 mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm">Tâches terminées: {checklistStats.completed}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
+                  <span className="text-sm">Tâches en cours: {checklistStats.inProgress}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                  <span className="text-sm">Tâches à faire: {checklistStats.todo}</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
           
           <Link href="/checklist">
             <Button variant="secondary" className="w-full">Gérer ma liste de tâches</Button>
