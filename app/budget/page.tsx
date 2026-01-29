@@ -116,7 +116,7 @@ export default function BudgetPage() {
     }
   }, [user]);
   
-  // Calculate progress of the budget
+  // Calculate progress
   const budgetProgress = budget ? (budget.spent / budget.totalAmount) * 100 : 0;
   
   return (
