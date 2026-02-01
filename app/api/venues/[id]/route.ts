@@ -58,11 +58,13 @@ export async function GET(
 
     const venueData = {
       id: placeId,
-      name: place.name,
-      address: place.formatted_address,
+      name: place.name ?? "",
+      address: place.formatted_address ?? "",
       rating: place.rating || 0,
       userRatingsTotal: place.user_ratings_total,
       price: 'Prix sur demande',
+      image: "/images/image-venue-landing.png",
+      isFavorite: false,
       phoneNumber: place.formatted_phone_number,
       internationalPhoneNumber: place.international_phone_number,
       website: place.website,
