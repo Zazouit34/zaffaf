@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/components/container";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export function CTA() {
@@ -15,7 +16,7 @@ export function CTA() {
             Rejoignez des milliers de couples qui ont trouvé leur lieu idéal et planifié leur mariage de rêve avec Zaffaf.
           </p>
           <Button size="lg" className="bg-white text-primary hover:bg-white/90 text-lg px-10 py-6">
-            Commencer Maintenant
+            <Link href="/login">Commencer Maintenant</Link>
           </Button>
         </div>
       </Container>
