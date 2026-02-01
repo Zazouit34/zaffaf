@@ -71,6 +71,31 @@ export const onBudgetChange = (callback: () => void) => {
   return () => window.removeEventListener(BUDGET_CHANGE_EVENT, handler);
 };
 
+const recalcBudgetFromCategories = async (userId: string) => {
+  const budgetRef = doc(db, "users", userId, "budget", "main");
+  const budgetSnap = await getDoc(budgetRef);
+  if (!budgetSnap.exists()) return null;
+
+  const categoriesRef = collection(db, "users", userId, "budgetCategories");
+  const categoriesSnap = await getDocs(categoriesRef);
+  let totalSpent = 0;
+  categoriesSnap.forEach((cat) => {
+    const data = cat.data();
+    totalSpent += data.amount || 0;
+  });
+
+  const totalAmount = budgetSnap.data().totalAmount || 0;
+  const remaining = Math.max(0, totalAmount - totalSpent);
+
+  await updateDoc(budgetRef, {
+    spent: totalSpent,
+    remaining,
+    updatedAt: Timestamp.now()
+  });
+
+  return { totalSpent, remaining };
+};
+
 // Get user's budget
 export const getBudget = async (): Promise<Budget | null> => {
   try {
@@ -143,6 +168,9 @@ export const setUserBudget = async (totalAmount: number, currency: string = "EUR
       
       toast.success('Budget mis à jour avec succès');
     }
+
+    // Recalculate spent/remaining based on current categories (single-step spending model)
+    await recalcBudgetFromCategories(user.uid);
     
     dispatchBudgetChangeEvent();
     return true;
@@ -173,8 +201,8 @@ export const getBudgetCategories = async (): Promise<BudgetCategory[]> => {
         id: doc.id,
         name: data.name,
         amount: data.amount,
-        spent: data.spent,
-        remaining: data.remaining,
+        spent: data.spent ?? data.amount ?? 0,
+        remaining: data.remaining ?? 0,
         color: data.color,
         userId: user.uid,
         createdAt: data.createdAt.toDate()
@@ -224,13 +252,13 @@ export const addBudgetCategory = async (
       return false;
     }
 
-    // Add the category
+    // Add the category (treated as fully spent immediately)
     const categoriesRef = collection(db, "users", user.uid, "budgetCategories");
     await addDoc(categoriesRef, {
       name,
       amount,
-      spent: 0,
-      remaining: amount,
+      spent: amount,
+      remaining: 0,
       color,
       userId: user.uid,
       createdAt: Timestamp.now()
@@ -238,6 +266,7 @@ export const addBudgetCategory = async (
     
     toast.success('Catégorie de budget ajoutée');
     
+    await recalcBudgetFromCategories(user.uid);
     dispatchBudgetChangeEvent();
     return true;
     
@@ -260,82 +289,43 @@ export const updateBudgetCategory = async (
       return false;
     }
 
-    // If amount is being changed, we need to check budget constraints
-    if (updates.amount !== undefined) {
-      // Get the current category to check the difference
-      const categoryRef = doc(db, "users", user.uid, "budgetCategories", categoryId);
-      const categorySnap = await getDoc(categoryRef);
-      
-      if (!categorySnap.exists()) {
-        toast.error('Catégorie introuvable');
-        return false;
-      }
-      
-      const categoryData = categorySnap.data();
-      const currentAmount = categoryData.amount;
-      const spentAmount = categoryData.spent || 0;
-      
-      // Check if the new amount is at least equal to what's already spent
-      if (updates.amount < spentAmount) {
-        toast.error(`Le montant doit être au moins égal au montant déjà dépensé: ${spentAmount}`);
-        return false;
-      }
-      
-      // Calculate how this change affects the overall budget
-      const amountDifference = updates.amount - currentAmount;
-      
-      if (amountDifference > 0) {
-        // We're increasing the category amount, make sure there's enough in the overall budget
-        const budgetRef = doc(db, "users", user.uid, "budget", "main");
-        const budgetSnap = await getDoc(budgetRef);
-        
-        if (!budgetSnap.exists()) {
-          toast.error('Budget introuvable');
-          return false;
-        }
-        
-        const budgetData = budgetSnap.data();
-        const budgetRemaining = budgetData.remaining || 0;
-        
-        if (amountDifference > budgetRemaining) {
-          toast.error(`Montant trop élevé. Reste dans le budget total: ${budgetRemaining}`);
-          return false;
-        }
-      }
-
-      // Calculate new remaining value for category
-      const newRemaining = updates.amount - spentAmount;
-      
-      // Update the category
-      await updateDoc(categoryRef, {
-        ...updates,
-        remaining: newRemaining
-      });
-      
-      // Update the main budget
-      if (amountDifference !== 0) {
-        const budgetRef = doc(db, "users", user.uid, "budget", "main");
-        await runTransaction(db, async (transaction) => {
-          const budgetDoc = await transaction.get(budgetRef);
-          if (!budgetDoc.exists()) {
-            throw "Budget document does not exist!";
-          }
-          
-          const budgetData = budgetDoc.data();
-          const newRemaining = (budgetData.remaining || 0) - amountDifference;
-          
-          transaction.update(budgetRef, { 
-            remaining: newRemaining,
-            updatedAt: Timestamp.now()
-          });
-        });
-      }
-    } else {
-      // Just updating name or color, simpler case
-      const categoryRef = doc(db, "users", user.uid, "budgetCategories", categoryId);
-      await updateDoc(categoryRef, updates);
-    }
+    const categoryRef = doc(db, "users", user.uid, "budgetCategories", categoryId);
+    const categorySnap = await getDoc(categoryRef);
     
+    if (!categorySnap.exists()) {
+      toast.error('Catégorie introuvable');
+      return false;
+    }
+
+    const budgetRef = doc(db, "users", user.uid, "budget", "main");
+    const budgetSnap = await getDoc(budgetRef);
+    if (!budgetSnap.exists()) {
+      toast.error('Budget introuvable');
+      return false;
+    }
+
+    const totalBudget = budgetSnap.data().totalAmount || 0;
+
+    // If amount changes, ensure we stay within total budget
+    if (updates.amount !== undefined) {
+      const categories = await getBudgetCategories();
+      const otherTotal = categories
+        .filter((c) => c.id !== categoryId)
+        .reduce((sum, c) => sum + c.amount, 0);
+
+      if (updates.amount + otherTotal > totalBudget) {
+        toast.error(`Montant trop élevé. Reste dans le budget total: ${totalBudget - otherTotal}`);
+        return false;
+      }
+    }
+
+    await updateDoc(categoryRef, {
+      ...updates,
+      // In the single-step spending model, the item is fully spent
+      ...(updates.amount !== undefined ? { spent: updates.amount, remaining: 0 } : {})
+    });
+
+    await recalcBudgetFromCategories(user.uid);
     toast.success('Catégorie de budget mise à jour');
     
     dispatchBudgetChangeEvent();
@@ -357,16 +347,6 @@ export const deleteBudgetCategory = async (categoryId: string): Promise<boolean>
       return false;
     }
 
-    // Check if this category has expenses
-    const expensesRef = collection(db, "users", user.uid, "expenses");
-    const q = query(expensesRef, where("categoryId", "==", categoryId));
-    const expensesSnap = await getDocs(q);
-    
-    if (!expensesSnap.empty) {
-      toast.error('Cette catégorie contient des dépenses. Veuillez d\'abord les supprimer.');
-      return false;
-    }
-    
     // Get category amount to update main budget
     const categoryRef = doc(db, "users", user.uid, "budgetCategories", categoryId);
     const categorySnap = await getDoc(categoryRef);
@@ -381,22 +361,7 @@ export const deleteBudgetCategory = async (categoryId: string): Promise<boolean>
     // Delete the category
     await deleteDoc(categoryRef);
     
-    // Update main budget's remaining amount
-    const budgetRef = doc(db, "users", user.uid, "budget", "main");
-    await runTransaction(db, async (transaction) => {
-      const budgetDoc = await transaction.get(budgetRef);
-      if (!budgetDoc.exists()) {
-        throw "Budget document does not exist!";
-      }
-      
-      const budgetData = budgetDoc.data();
-      const newRemaining = (budgetData.remaining || 0) + categoryAmount;
-      
-      transaction.update(budgetRef, { 
-        remaining: newRemaining,
-        updatedAt: Timestamp.now()
-      });
-    });
+    await recalcBudgetFromCategories(user.uid);
     
     toast.success('Catégorie de budget supprimée');
     

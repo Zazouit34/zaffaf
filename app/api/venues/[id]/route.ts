@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
+import { 
+  getCachedVenue, 
+  setCachedVenue, 
+  ENABLE_GOOGLE_FETCH 
+} from '@/lib/venues-cache';
 
 // Main GET handler using async params
 export async function GET(
@@ -11,6 +16,15 @@ export async function GET(
 
     if (!placeId) {
       return NextResponse.json({ error: 'Place ID is required' }, { status: 400 });
+    }
+
+    const cached = await getCachedVenue(placeId);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
+    if (!ENABLE_GOOGLE_FETCH) {
+      return NextResponse.json({ error: 'Venue not cached and external fetch disabled' }, { status: 404 });
     }
 
     const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
@@ -74,6 +88,7 @@ export async function GET(
         : undefined,
     };
 
+    await setCachedVenue(placeId, venueData);
     return NextResponse.json(venueData);
   } catch (error) {
     console.error('Error fetching venue details:', error);

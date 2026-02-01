@@ -10,7 +10,6 @@ export const cities = [
   "Blida",
   "Bejaia",
   "Tizi Ouzou",
-  "Skikda",
-  "Souk Ahras",
+  "Ain Defla",
   "Bordj Bouarreridj",
 ]; 

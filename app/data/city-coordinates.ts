@@ -11,8 +11,7 @@ export const cityCoordinates: [string, number, number, number][] = [
   ["Blida", 36.4722, 2.8278, 20],
   ["Bejaia", 36.7513, 5.0567, 20],
   ["Tizi Ouzou", 36.7169, 4.0476, 20],
-  ["Skikda", 36.8790, 6.9075, 20],
-  ["Souk Ahras", 36.2864, 7.9511, 20],
+  ["Ain Defla", 36.2614, 1.9214, 20],
   ["Bordj Bouarreridj", 36.0730, 4.7631, 20],
 ];
 

@@ -4,6 +4,13 @@ import axios from 'axios';
 import pLimit from 'p-limit';
 import { cities } from '@/app/data/cities';
 import { determineActualCity } from '@/app/data/city-coordinates';
+import { 
+  getCachedSearch, 
+  setCachedSearch, 
+  getCachedVenue, 
+  setCachedVenue, 
+  ENABLE_GOOGLE_FETCH 
+} from '@/lib/venues-cache';
 
 interface VenuePhoto {
   photo_reference: string;
@@ -54,6 +61,10 @@ export interface Venue {
 
 // Placeholder image to use if no photo is available
 const PLACEHOLDER_IMAGE = '/images/image-venue-landing.png';
+
+const toCacheVenue = (venue: Venue) => ({
+  ...venue,
+});
 
 // Different search terms to find diverse venue types
 const searchTerms = [
@@ -168,6 +179,11 @@ async function fetchVenuesWithTerm(city: string, searchTerm: string, apiKey: str
       }
       
       const response: any = await axios.get(searchUrl);
+      console.log(
+        '[venues] textsearch',
+        { city, term: searchTerm, page: currentPage + 1 },
+        { status: response?.data?.status, count: response?.data?.results?.length }
+      );
       
       if (response.data.status !== 'OK' || !response.data.results) {
         console.warn(`No results for ${city} with term "${searchTerm}" on page ${currentPage + 1}: ${response.data.status}`);
@@ -225,8 +241,18 @@ async function fetchVenuesForCity(city: string, apiKey: string): Promise<Venue[]
 
 export async function fetchVenues(): Promise<Venue[]> {
   try {
+    const CACHE_KEY = 'all-venues';
+    const cached = await getCachedSearch(CACHE_KEY);
+    if (cached) {
+      return cached as Venue[];
+    }
+
+    if (!ENABLE_GOOGLE_FETCH) {
+      console.warn('[venues] Google fetch disabled, returning empty list');
+      return [];
+    }
+
     const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
-    
     if (!API_KEY) {
       throw new Error('Google Places API key is not defined');
     }
@@ -250,7 +276,10 @@ export async function fetchVenues(): Promise<Venue[]> {
     
     console.log(`Fetched a total of ${uniqueVenues.length} unique venues across ${cities.length} cities`);
     
-    // Return all unique venues
+    // Cache list and individual venues
+    await setCachedSearch(CACHE_KEY, uniqueVenues.map(toCacheVenue));
+    await Promise.all(uniqueVenues.map(v => setCachedVenue(v.id, toCacheVenue(v))));
+
     return uniqueVenues;
   } catch (error) {
     console.error('Error fetching venues:', error);
@@ -261,8 +290,17 @@ export async function fetchVenues(): Promise<Venue[]> {
 // Function to fetch detailed venue data for a single place
 export async function fetchVenueDetails(placeId: string): Promise<Venue | null> {
   try {
+    const cached = await getCachedVenue(placeId);
+    if (cached) {
+      return cached as Venue;
+    }
+
+    if (!ENABLE_GOOGLE_FETCH) {
+      console.warn('[venues] Google fetch disabled; no cached detail for', placeId);
+      return null;
+    }
+
     const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
-    
     if (!API_KEY) {
       throw new Error('Google Places API key is not defined');
     }
@@ -368,6 +406,7 @@ export async function fetchVenueDetails(placeId: string): Promise<Venue | null> 
       types: place.types
     };
     
+    await setCachedVenue(placeId, toCacheVenue(venue));
     return venue;
     
   } catch (error) {

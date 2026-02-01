@@ -3,6 +3,7 @@
 import { Container } from "@/components/container";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Hero() {
   return (
@@ -33,11 +34,11 @@ export function Hero() {
                   Découvrez de magnifiques lieux de mariage et d'événements avec des avis honnêtes et connectez-vous facilement avec tous les services dont vous avez besoin pour votre jour spécial.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-up" style={{ animationDelay: "600ms" }}>
-                  <Button size="lg" className="text-lg px-8">
-                    Explorer les Lieux
+                  <Button size="lg" className="text-lg px-8" asChild>
+                    <Link href="/venues">Explorer les Lieux</Link>
                   </Button>
-                  <Button size="lg" className="text-lg px-8" variant="outline">
-                    Trouver des Services
+                  <Button size="lg" className="text-lg px-8" variant="outline" asChild>
+                    <Link href="/dashboard">Trouver des Services</Link>
                   </Button>
                 </div>
               </div>
@@ -70,11 +71,11 @@ export function Hero() {
               Découvrez de magnifiques lieux de mariage avec des avis honnêtes et connectez-vous avec tous les services dont vous avez besoin.
             </p>
             <div className="flex flex-col gap-3 animate-fade-up" style={{ animationDelay: "600ms" }}>
-              <Button size="lg">
-                Explorer les Lieux
+              <Button size="lg" asChild>
+                <Link href="/venues">Explorer les Lieux</Link>
               </Button>
-              <Button size="lg" variant="outline">
-                Trouver des Services
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/dashboard">Trouver des Services</Link>
               </Button>
             </div>
           </div>
