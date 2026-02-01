@@ -12,7 +12,8 @@ import { ProfileEditDialog } from "@/components/profile-edit-dialog";
 import { AppLayout } from "@/components/app-layout";
 import { FavoriteVenue, getUserFavorites, onFavoriteChange } from "@/lib/favorites-service";
 import { ChecklistItem, getChecklistItems, onChecklistChange } from "@/lib/checklist-service";
-import { Heart, CheckSquare, Calendar, CreditCard } from "lucide-react";
+import { Heart, CheckSquare, CreditCard } from "lucide-react";
+import { Budget, getBudget, onBudgetChange } from "@/lib/budget-service";
 
 interface UserData {
   firstName: string;
@@ -37,6 +38,8 @@ export default function DashboardPage() {
     todo: 0
   });
   const [loadingChecklist, setLoadingChecklist] = useState(false);
+  const [budgetSummary, setBudgetSummary] = useState<Budget | null>(null);
+  const [loadingBudget, setLoadingBudget] = useState(false);
 
   const fetchUserData = async () => {
     if (user) {
@@ -99,10 +102,25 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchBudgetSummary = async () => {
+    if (user) {
+      try {
+        setLoadingBudget(true);
+        const budget = await getBudget();
+        setBudgetSummary(budget);
+      } catch (error) {
+        console.error("Error fetching budget:", error);
+      } finally {
+        setLoadingBudget(false);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchUserData();
     fetchFavorites();
     fetchChecklistStats();
+    fetchBudgetSummary();
     
     // Listen for changes to favorites to update the dashboard
     const unsubscribeFavorites = onFavoriteChange((venueId, isFavorite) => {
@@ -122,9 +140,15 @@ export default function DashboardPage() {
       fetchChecklistStats();
     });
     
+    // Listen for changes to budget to update the dashboard
+    const unsubscribeBudget = onBudgetChange(() => {
+      fetchBudgetSummary();
+    });
+    
     return () => {
       unsubscribeFavorites();
       unsubscribeChecklist();
+      unsubscribeBudget();
     };
   }, [user]);
 
@@ -268,12 +292,51 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold">Budget</h2>
           </div>
           
-          <p className="text-muted-foreground mb-4">
-            Gérez votre budget de mariage, suivez vos dépenses et restez dans les limites que vous vous êtes fixées.
-          </p>
+          {loadingBudget ? (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : budgetSummary ? (
+            <>
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Total</span>
+                  <span className="font-medium">
+                    {budgetSummary.totalAmount.toLocaleString()} {budgetSummary.currency}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Dépensé</span>
+                  <span className="text-red-500 font-semibold">
+                    {budgetSummary.spent.toLocaleString()} {budgetSummary.currency}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Restant</span>
+                  <span className="text-green-500 font-semibold">
+                    {budgetSummary.remaining.toLocaleString()} {budgetSummary.currency}
+                  </span>
+                </div>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2 mb-4">
+                <div
+                  className="h-2 rounded-full bg-primary"
+                  style={{
+                    width: `${Math.min(100, (budgetSummary.spent / budgetSummary.totalAmount) * 100 || 0)}%`,
+                  }}
+                ></div>
+              </div>
+            </>
+          ) : (
+            <p className="text-muted-foreground mb-4">
+              Configurez votre budget pour commencer à suivre vos dépenses.
+            </p>
+          )}
           
           <Link href="/budget">
-            <Button variant="secondary" className="w-full">Gérer mon budget</Button>
+            <Button variant="secondary" className="w-full">
+              {budgetSummary ? "Gérer mon budget" : "Configurer mon budget"}
+            </Button>
           </Link>
         </div>
       </div>
